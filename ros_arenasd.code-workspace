@@ -2,11 +2,11 @@
 	"folders": [
 		{
 			"name": "ARENA_CAMERA_PKG",
-			"path": "./catkin_ws/src/arena_camera"
+			"path": "./lucid_camera_driver/src/arena_camera"
 		},
 		{
 			"name": "WS_ROOT",
-			"path": "catkin_ws"
+			"path": "lucid_camera_driver"
 		},
 		{
 			"name": "REPO_ROOT",
@@ -28,7 +28,7 @@
 	"settings": {
 		// terminal
 		//
-		"terminal.integrated.cwd": "./catkin_ws/",
+		"terminal.integrated.cwd": "./lucid_camera_driver/",
 		//
 		// file
 		//

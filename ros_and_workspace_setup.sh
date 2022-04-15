@@ -4,7 +4,7 @@
 # MAIN VARS TO CHANGE
 #
 ARENA_INSTALLATION_ROOT="$HOME/software/OutputDirectory/Linux"
-ARENA_ROS_WORDSPACE_TO_SETUP="$HOME/arena_camera_ros/catkin_ws" #change to workspace location
+ARENA_ROS_WORDSPACE_TO_SETUP="$HOME/carma_ws/src/lucid_camera_driver/lucid_camera_driver" #change to workspace location
 INSTALL_ROS=1
 
 

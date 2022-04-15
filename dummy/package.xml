@@ -1,0 +1,30 @@
+<package>
+  <name>dummy</name>
+  <version>0.0.0</version>
+  <description>
+    A dummy package to install dependencies.
+  </description>
+  <maintainer email="goodarzm@vt.edu">Goodarz Mehr</maintainer>
+  <maintainer email="ros-orphaned-packages@googlegroups.com">ROS Orphaned Package Maintainers</maintainer>
+  <license>BSD</license>
+
+  <author email="goodarzm@vt.edu">Goodarz Mehr</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>actionlib</build_depend>
+  <build_depend>camera_info_manager</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>diagnostic_updater</build_depend>
+  <build_depend>image_geometry</build_depend>
+  <build_depend>image_transport</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>roslaunch</build_depend>
+  <build_depend>roslint</build_depend>
+  
+  <export>
+      
+  </export>
+</package>
+
