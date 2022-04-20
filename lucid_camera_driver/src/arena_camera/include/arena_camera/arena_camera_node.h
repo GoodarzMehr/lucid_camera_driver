@@ -65,6 +65,8 @@
 #include <arena_camera/arena_camera.h>
 #include <arena_camera/arena_camera_parameter.h>
 
+#include <cav_msgs/DriverStatus.h>
+
 namespace arena_camera
 {
 typedef actionlib::SimpleActionServer<camera_control_msgs::GrabImagesAction> GrabImagesAS;
@@ -393,6 +395,11 @@ protected:
   ros::Timer diagnostics_trigger_;
   void create_diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat);
   void create_camera_info_diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat);
+
+  //CARMA status
+  cav_msgs::DriverStatus discovery_msg_;
+  ros::Time last_discovery_pub_;
+  ros::Publisher* discovery_pub_;
 };
 
 }  // namespace arena_camera

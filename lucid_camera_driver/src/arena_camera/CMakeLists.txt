@@ -55,6 +55,7 @@ set(CATKIN_COMPONENTS
      roslint
      roslaunch 
      sensor_msgs
+     cav_msgs
 )
 
 ## Find catkin macros and libraries

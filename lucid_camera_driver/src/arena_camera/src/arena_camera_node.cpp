@@ -78,6 +78,7 @@ ArenaCameraNode::ArenaCameraNode()
   , it_(new image_transport::ImageTransport(nh_))
   , img_raw_pub_(it_->advertiseCamera("image_raw", 1))
   , img_rect_pub_(nullptr)
+  , discovery_pub_(nullptr)
   , grab_imgs_raw_as_(nh_, "grab_images_raw", boost::bind(&ArenaCameraNode::grabImagesRawActionExecuteCB, this, _1),
                       false)
   , grab_imgs_rect_as_(nullptr)
@@ -132,11 +133,22 @@ void ArenaCameraNode::init()
   //  arena_camera_parameter_set_.setCameraInfoURL(nh_,
   //  "file://${ROS_HOME}/camera_info/camera.yaml");
 
+  // initialize CARMA discovery publisher
+  discovery_pub_ = new ros::Publisher(nh_.advertise<cav_msgs::DriverStatus>("discovery", 1));
+  discovery_msg_.name = "/hardware_interface/camera";
+  discovery_msg_.camera = true;
+  last_discovery_pub_ = ros::Time::now();
+
   // creating the target ArenaCamera-Object with the specified
   // device_user_id, registering the Software-Trigger-Mode, starting the
   // communication with the device and enabling the desired startup-settings
   if (!initAndRegister())
   {
+    discovery_msg_.status = cav_msgs::DriverStatus::OFF;
+    if (last_discovery_pub_ == ros::Time(0) || (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+        discovery_pub_->publish(discovery_msg_);
+        last_discovery_pub_ = ros::Time::now();
+    }
     ros::shutdown();
     return;
   }
@@ -144,6 +156,11 @@ void ArenaCameraNode::init()
   // starting the grabbing procedure with the desired image-settings
   if (!startGrabbing())
   {
+    discovery_msg_.status = cav_msgs::DriverStatus::OFF;
+    if (last_discovery_pub_ == ros::Time(0) || (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+        discovery_pub_->publish(discovery_msg_);
+        last_discovery_pub_ = ros::Time::now();
+    }
     ros::shutdown();
     return;
   }
@@ -221,6 +238,11 @@ bool ArenaCameraNode::initAndRegister()
       {
         ROS_WARN_STREAM("No camera present. Keep waiting ...");
         end = ros::Time::now() + ros::Duration(15.0);
+      }
+      discovery_msg_.status = cav_msgs::DriverStatus::OFF;
+      if (last_discovery_pub_ == ros::Time(0) || (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+          discovery_pub_->publish(discovery_msg_);
+          last_discovery_pub_ = ros::Time::now();
       }
       r.sleep();
       ros::spinOnce();
@@ -726,6 +748,11 @@ void ArenaCameraNode::spin()
     {
       user_output_srv.shutdown();
     }
+    discovery_msg_.status = cav_msgs::DriverStatus::FAULT;
+    if (last_discovery_pub_ == ros::Time(0) || (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+        discovery_pub_->publish(discovery_msg_);
+        last_discovery_pub_ = ros::Time::now();
+    }
     ros::Duration(0.5).sleep();  // sleep for half a second
     init();
     return;
@@ -738,6 +765,11 @@ void ArenaCameraNode::spin()
       if (!grabImage())
       {
         ROS_INFO("did not get image");
+        discovery_msg_.status = cav_msgs::DriverStatus::FAULT;
+        if (last_discovery_pub_ == ros::Time(0) || (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+            discovery_pub_->publish(discovery_msg_);
+            last_discovery_pub_ = ros::Time::now();
+        }
         return;
       }
     }
@@ -752,6 +784,7 @@ void ArenaCameraNode::spin()
       // Publish via image_transport
       img_raw_pub_.publish(img_raw_msg_, *cam_info);
       ROS_INFO_ONCE("Number subscribers received");
+      discovery_msg_.status = cav_msgs::DriverStatus::OPERATIONAL;
     }
 
     if (getNumSubscribersRect() > 0 && camera_info_manager_->isCalibrated())
@@ -763,6 +796,12 @@ void ArenaCameraNode::spin()
       pinhole_model_->rectifyImage(cv_img_raw->image, cv_bridge_img_rect_->image);
       img_rect_pub_->publish(*cv_bridge_img_rect_);
       ROS_INFO_ONCE("Number subscribers rect received");
+      discovery_msg_.status = cav_msgs::DriverStatus::OPERATIONAL;
+    }
+
+    if (last_discovery_pub_ == ros::Time(0) || (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+        discovery_pub_->publish(discovery_msg_);
+        last_discovery_pub_ = ros::Time::now();
     }
   }
 }
