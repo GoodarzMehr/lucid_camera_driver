@@ -16,7 +16,7 @@ RUN set -xue \
 && apt-get install -y \
  build-essential cmake \
  fakeroot dpkg-dev debhelper git \
- $PY-rosdep $PY-rospkg $PY-bloom
+ $PY-rosdep $PY-rospkg
 
 # Set up non-root build user
 ARG BUILD_UID=1000
