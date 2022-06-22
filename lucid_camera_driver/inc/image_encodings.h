@@ -40,177 +40,209 @@
 #include <stdexcept>
 #include <string>
 
-namespace sensor_msgs {
-namespace image_encodings {
-const std::string RGB8 = "rgb8";
-const std::string RGBA8 = "rgba8";
-const std::string RGB16 = "rgb16";
-const std::string RGBA16 = "rgba16";
-const std::string BGR8 = "bgr8";
-const std::string BGRA8 = "bgra8";
-const std::string BGR16 = "bgr16";
-const std::string BGRA16 = "bgra16";
-const std::string MONO8 = "mono8";
-const std::string MONO16 = "mono16";
-const std::string CONFIDENCE16 = "confidence16";
-const std::string COORD3D_ABC16 = "coord3d_abc16";
-const std::string COORD3D_ABCY16 = "coord3d_abcy16";
+namespace sensor_msgs
+{
+  namespace image_encodings
+  {
+    const std::string RGB8 = "rgb8";
+    const std::string RGBA8 = "rgba8";
+    const std::string RGB16 = "rgb16";
+    const std::string RGBA16 = "rgba16";
+    const std::string RGB24 = "rgb24";
+    const std::string RGBA24 = "rgba24";
+    const std::string BGR8 = "bgr8";
+    const std::string BGRA8 = "bgra8";
+    const std::string BGR16 = "bgr16";
+    const std::string BGRA16 = "bgra16";
+    const std::string BGR24 = "bgr24";
+    const std::string BGRA24 = "bgra24";
+    const std::string MONO8 = "mono8";
+    const std::string MONO16 = "mono16";
+    const std::string MONO24 = "mono24";
+    const std::string CONFIDENCE16 = "confidence16";
+    const std::string COORD3D_ABC16 = "coord3d_abc16";
+    const std::string COORD3D_ABCY16 = "coord3d_abcy16";
 
-// OpenCV CvMat types
-const std::string TYPE_8UC1 = "8UC1";
-const std::string TYPE_8UC2 = "8UC2";
-const std::string TYPE_8UC3 = "8UC3";
-const std::string TYPE_8UC4 = "8UC4";
-const std::string TYPE_8SC1 = "8SC1";
-const std::string TYPE_8SC2 = "8SC2";
-const std::string TYPE_8SC3 = "8SC3";
-const std::string TYPE_8SC4 = "8SC4";
-const std::string TYPE_16UC1 = "16UC1";
-const std::string TYPE_16UC2 = "16UC2";
-const std::string TYPE_16UC3 = "16UC3";
-const std::string TYPE_16UC4 = "16UC4";
-const std::string TYPE_16SC1 = "16SC1";
-const std::string TYPE_16SC2 = "16SC2";
-const std::string TYPE_16SC3 = "16SC3";
-const std::string TYPE_16SC4 = "16SC4";
-const std::string TYPE_32SC1 = "32SC1";
-const std::string TYPE_32SC2 = "32SC2";
-const std::string TYPE_32SC3 = "32SC3";
-const std::string TYPE_32SC4 = "32SC4";
-const std::string TYPE_32FC1 = "32FC1";
-const std::string TYPE_32FC2 = "32FC2";
-const std::string TYPE_32FC3 = "32FC3";
-const std::string TYPE_32FC4 = "32FC4";
-const std::string TYPE_64FC1 = "64FC1";
-const std::string TYPE_64FC2 = "64FC2";
-const std::string TYPE_64FC3 = "64FC3";
-const std::string TYPE_64FC4 = "64FC4";
+    // OpenCV CvMat types
+    const std::string TYPE_8UC1 = "8UC1";
+    const std::string TYPE_8UC2 = "8UC2";
+    const std::string TYPE_8UC3 = "8UC3";
+    const std::string TYPE_8UC4 = "8UC4";
+    const std::string TYPE_8SC1 = "8SC1";
+    const std::string TYPE_8SC2 = "8SC2";
+    const std::string TYPE_8SC3 = "8SC3";
+    const std::string TYPE_8SC4 = "8SC4";
+    const std::string TYPE_16UC1 = "16UC1";
+    const std::string TYPE_16UC2 = "16UC2";
+    const std::string TYPE_16UC3 = "16UC3";
+    const std::string TYPE_16UC4 = "16UC4";
+    const std::string TYPE_16SC1 = "16SC1";
+    const std::string TYPE_16SC2 = "16SC2";
+    const std::string TYPE_16SC3 = "16SC3";
+    const std::string TYPE_16SC4 = "16SC4";
+    const std::string TYPE_32SC1 = "32SC1";
+    const std::string TYPE_32SC2 = "32SC2";
+    const std::string TYPE_32SC3 = "32SC3";
+    const std::string TYPE_32SC4 = "32SC4";
+    const std::string TYPE_32FC1 = "32FC1";
+    const std::string TYPE_32FC2 = "32FC2";
+    const std::string TYPE_32FC3 = "32FC3";
+    const std::string TYPE_32FC4 = "32FC4";
+    const std::string TYPE_64FC1 = "64FC1";
+    const std::string TYPE_64FC2 = "64FC2";
+    const std::string TYPE_64FC3 = "64FC3";
+    const std::string TYPE_64FC4 = "64FC4";
 
-// Bayer encodings
-const std::string BAYER_RGGB8 = "bayer_rggb8";
-const std::string BAYER_BGGR8 = "bayer_bggr8";
-const std::string BAYER_GBRG8 = "bayer_gbrg8";
-const std::string BAYER_GRBG8 = "bayer_grbg8";
-const std::string BAYER_RGGB16 = "bayer_rggb16";
-const std::string BAYER_BGGR16 = "bayer_bggr16";
-const std::string BAYER_GBRG16 = "bayer_gbrg16";
-const std::string BAYER_GRBG16 = "bayer_grbg16";
+    // Bayer encodings
+    const std::string BAYER_RGGB8 = "bayer_rggb8";
+    const std::string BAYER_BGGR8 = "bayer_bggr8";
+    const std::string BAYER_GBRG8 = "bayer_gbrg8";
+    const std::string BAYER_GRBG8 = "bayer_grbg8";
+    const std::string BAYER_RGGB16 = "bayer_rggb16";
+    const std::string BAYER_BGGR16 = "bayer_bggr16";
+    const std::string BAYER_GBRG16 = "bayer_gbrg16";
+    const std::string BAYER_GRBG16 = "bayer_grbg16";
+    const std::string BAYER_RGGB24 = "bayer_rggb24";
+    const std::string BAYER_BGGR24 = "bayer_bggr24";
+    const std::string BAYER_GBRG24 = "bayer_gbrg24";
+    const std::string BAYER_GRBG24 = "bayer_grbg24";
 
-// Miscellaneous
-// This is the UYVY version of YUV422 codec http://www.fourcc.org/yuv.php#UYVY
-// with an 8-bit depth
-const std::string YUV422 = "yuv422";
+    // Miscellaneous
+    // This is the UYVY version of YUV422 codec http://www.fourcc.org/yuv.php#UYVY
+    // with an 8-bit depth.
+    const std::string YUV422 = "yuv422";
 
-// Prefixes for abstract image encodings
-const std::string ABSTRACT_ENCODING_PREFIXES[] = {
-    "8UC", "8SC", "16UC", "16SC", "32SC", "32FC", "64FC"};
+    // Prefixes for abstract image encodings.
+    const std::string ABSTRACT_ENCODING_PREFIXES[] = {
+        "8UC", "8SC", "16UC", "16SC", "32SC", "32FC", "64FC"};
 
-// Utility functions for inspecting an encoding string
-static inline bool isColor(const std::string &encoding) {
-  return encoding == RGB8 || encoding == BGR8 || encoding == RGBA8 ||
-         encoding == BGRA8 || encoding == RGB16 || encoding == BGR16 ||
-         encoding == RGBA16 || encoding == BGRA16;
-}
-
-static inline bool isMono(const std::string &encoding) {
-  return encoding == MONO8 || encoding == MONO16 || encoding == CONFIDENCE16;
-}
-
-static inline bool isBayer(const std::string &encoding) {
-  return encoding == BAYER_RGGB8 || encoding == BAYER_BGGR8 ||
-         encoding == BAYER_GBRG8 || encoding == BAYER_GRBG8 ||
-         encoding == BAYER_RGGB16 || encoding == BAYER_BGGR16 ||
-         encoding == BAYER_GBRG16 || encoding == BAYER_GRBG16;
-}
-
-static inline bool hasAlpha(const std::string &encoding) {
-  return encoding == RGBA8 || encoding == BGRA8 || encoding == RGBA16 ||
-         encoding == BGRA16;
-}
-
-static inline int numChannels(const std::string &encoding) {
-  // First do the common-case encodings
-  if (encoding == MONO8 || encoding == MONO16 || encoding == CONFIDENCE16)
-    return 1;
-  if (encoding == BGR8 || encoding == RGB8 || encoding == BGR16 ||
-      encoding == RGB16)
-    return 3;
-  if (encoding == BGRA8 || encoding == RGBA8 || encoding == BGRA16 ||
-      encoding == RGBA16)
-    return 4;
-  if (encoding == BAYER_RGGB8 || encoding == BAYER_BGGR8 ||
-      encoding == BAYER_GBRG8 || encoding == BAYER_GRBG8 ||
-      encoding == BAYER_RGGB16 || encoding == BAYER_BGGR16 ||
-      encoding == BAYER_GBRG16 || encoding == BAYER_GRBG16)
-    return 1;
-
-  // Now all the generic content encodings
-  // TODO: Rewrite with regex when ROS supports C++11
-  for (size_t i = 0; i < sizeof(ABSTRACT_ENCODING_PREFIXES) /
-                             sizeof(*ABSTRACT_ENCODING_PREFIXES);
-       i++) {
-    std::string prefix = ABSTRACT_ENCODING_PREFIXES[i];
-    if (encoding.substr(0, prefix.size()) != prefix)
-      continue;
-    if (encoding.size() == prefix.size())
-      return 1; // ex. 8UC -> 1
-    int n_channel =
-        atoi(encoding.substr(prefix.size(),
-                             encoding.size() - prefix.size())
-                 .c_str()); // ex. 8UC5 -> 5
-    if (n_channel != 0) {
-      return n_channel; // valid encoding string
+    // Utility functions for inspecting an encoding string.
+    static inline bool isColor(const std::string &encoding) {
+      return encoding == RGB8 || encoding == BGR8 || encoding == RGBA8 ||
+              encoding == BGRA8 || encoding == RGB16 || encoding == BGR16 ||
+              encoding == RGBA16 || encoding == BGRA16 || encoding == RGB24 ||
+              encoding == BGR24 || encoding == RGBA24 || encoding == BGRA24;
     }
-  }
 
-  if (encoding == YUV422)
-    return 2;
+    static inline bool isRGB(const std::string &encoding) {
+      return encoding == RGB8 || encoding == RGBA8 || encoding == RGB16 ||
+              encoding == RGBA16 || encoding == RGB24 || encoding == RGBA24;
+    }
 
-  throw std::runtime_error("Unknown encoding " + encoding);
-  return -1;
-}
+    static inline bool isBGR(const std::string &encoding) {
+      return encoding == BGR8 || encoding == BGRA8 || encoding == BGR16 ||
+              encoding == BGRA16 || encoding == BGR24 || encoding == BGRA24;
+    }
 
-static inline int bitDepth(const std::string &encoding) {
-  if (encoding == MONO16 || encoding == CONFIDENCE16 ||
-      encoding == COORD3D_ABC16 || encoding == COORD3D_ABCY16)
-    return 16;
-  if (encoding == MONO8 || encoding == BGR8 || encoding == RGB8 ||
-      encoding == BGRA8 || encoding == RGBA8 || encoding == BAYER_RGGB8 ||
-      encoding == BAYER_BGGR8 || encoding == BAYER_GBRG8 ||
-      encoding == BAYER_GRBG8)
-    return 8;
+    static inline bool isMono(const std::string &encoding) {
+      return encoding == MONO8 || encoding == MONO16 ||
+              encoding == MONO24 || encoding == CONFIDENCE16;
+    }
 
-  if (encoding == MONO16 || encoding == BGR16 || encoding == RGB16 ||
-      encoding == BGRA16 || encoding == RGBA16 || encoding == BAYER_RGGB16 ||
-      encoding == BAYER_BGGR16 || encoding == BAYER_GBRG16 ||
-      encoding == BAYER_GRBG16)
-    return 16;
+    static inline bool isBayer(const std::string &encoding) {
+      return encoding == BAYER_RGGB8 || encoding == BAYER_BGGR8 ||
+              encoding == BAYER_GBRG8 || encoding == BAYER_GRBG8 ||
+              encoding == BAYER_RGGB16 || encoding == BAYER_BGGR16 ||
+              encoding == BAYER_GBRG16 || encoding == BAYER_GRBG16 ||
+              encoding == BAYER_RGGB24 || encoding == BAYER_BGGR24 ||
+              encoding == BAYER_GBRG24 || encoding == BAYER_GRBG24;
+    }
 
-  // Now all the generic content encodings
-  // TODO: Rewrite with regex when ROS supports C++11
-  for (size_t i = 0; i < sizeof(ABSTRACT_ENCODING_PREFIXES) /
-                             sizeof(*ABSTRACT_ENCODING_PREFIXES);
-       i++) {
-    std::string prefix = ABSTRACT_ENCODING_PREFIXES[i];
-    if (encoding.substr(0, prefix.size()) != prefix)
-      continue;
-    if (encoding.size() == prefix.size())
-      return atoi(prefix.c_str()); // ex. 8UC -> 8
-    int n_channel =
-        atoi(encoding.substr(prefix.size(),
-                             encoding.size() - prefix.size())
-                 .c_str()); // ex. 8UC10 -> 10
-    if (n_channel != 0)
-      return atoi(prefix.c_str()); // valid encoding string
-  }
+    static inline bool hasAlpha(const std::string &encoding) {
+      return encoding == RGBA8 || encoding == BGRA8 || encoding == RGBA16 ||
+              encoding == BGRA16 || encoding == RGBA24 || encoding == BGRA24;
+    }
 
-  if (encoding == YUV422)
-    return 8;
+    static inline int numChannels(const std::string &encoding) {
+      // First do the common-case encodings.
+      if (encoding == MONO8 || encoding == MONO16 ||
+          encoding == MONO24 || encoding == CONFIDENCE16)
+        return 1;
+      if (encoding == BGR8 || encoding == RGB8 || encoding == BGR16 ||
+          encoding == RGB16 || encoding == BGR24 || encoding == RGB24)
+        return 3;
+      if (encoding == BGRA8 || encoding == RGBA8 || encoding == BGRA16 ||
+          encoding == RGBA16 || encoding == BGRA24 || encoding == RGBA24)
+        return 4;
+      if (encoding == BAYER_RGGB8 || encoding == BAYER_BGGR8 ||
+          encoding == BAYER_GBRG8 || encoding == BAYER_GRBG8 ||
+          encoding == BAYER_RGGB16 || encoding == BAYER_BGGR16 ||
+          encoding == BAYER_GBRG16 || encoding == BAYER_GRBG16 ||
+          encoding == BAYER_RGGB24 || encoding == BAYER_BGGR24 ||
+          encoding == BAYER_GBRG24 || encoding == BAYER_GRBG24)
+        return 1;
 
-  throw std::runtime_error("Unknown encoding " + encoding);
-  return -1;
-}
-} // namespace image_encodings
+      // Now all the generic content encodings.
+      // TODO: Rewrite with regex when ROS supports C++11
+      for (size_t i = 0; i < sizeof(ABSTRACT_ENCODING_PREFIXES) /
+                                sizeof(*ABSTRACT_ENCODING_PREFIXES);
+          i++) {
+        std::string prefix = ABSTRACT_ENCODING_PREFIXES[i];
+        if (encoding.substr(0, prefix.size()) != prefix)
+          continue;
+        if (encoding.size() == prefix.size())
+          return 1; // ex. 8UC -> 1.
+        int n_channel =
+            atoi(encoding.substr(prefix.size(),
+                                encoding.size() - prefix.size())
+                    .c_str()); // ex. 8UC5 -> 5.
+        if (n_channel != 0) {
+          return n_channel; // valid encoding string.
+        }
+      }
+
+      if (encoding == YUV422)
+        return 2;
+
+      throw std::runtime_error("Unknown encoding " + encoding);
+      return -1;
+    }
+
+    static inline int bitDepth(const std::string &encoding) {
+      if (encoding == MONO16 || encoding == CONFIDENCE16 ||
+          encoding == COORD3D_ABC16 || encoding == COORD3D_ABCY16)
+        return 16;
+      if (encoding == MONO8 || encoding == BGR8 || encoding == RGB8 ||
+          encoding == BGRA8 || encoding == RGBA8 || encoding == BAYER_RGGB8 ||
+          encoding == BAYER_BGGR8 || encoding == BAYER_GBRG8 ||
+          encoding == BAYER_GRBG8)
+        return 8;
+      if (encoding == MONO16 || encoding == BGR16 || encoding == RGB16 ||
+          encoding == BGRA16 || encoding == RGBA16 || encoding == BAYER_RGGB16 ||
+          encoding == BAYER_BGGR16 || encoding == BAYER_GBRG16 ||
+          encoding == BAYER_GRBG16)
+        return 16;
+      if (encoding == MONO24 || encoding == BGR24 || encoding == RGB24 ||
+          encoding == BGRA24 || encoding == RGBA24 || encoding == BAYER_RGGB24 ||
+          encoding == BAYER_BGGR24 || encoding == BAYER_GBRG24 ||
+          encoding == BAYER_GRBG24)
+        return 24;
+
+      // Now all the generic content encodings.
+      // TODO: Rewrite with regex when ROS supports C++11
+      for (size_t i = 0; i < sizeof(ABSTRACT_ENCODING_PREFIXES) /
+                                sizeof(*ABSTRACT_ENCODING_PREFIXES);
+          i++) {
+        std::string prefix = ABSTRACT_ENCODING_PREFIXES[i];
+        if (encoding.substr(0, prefix.size()) != prefix)
+          continue;
+        if (encoding.size() == prefix.size())
+          return atoi(prefix.c_str()); // ex. 8UC -> 8.
+        int n_channel =
+            atoi(encoding.substr(prefix.size(),
+                                encoding.size() - prefix.size())
+                    .c_str()); // ex. 8UC10 -> 10.
+        if (n_channel != 0)
+          return atoi(prefix.c_str()); // valid encoding string.
+      }
+
+      if (encoding == YUV422)
+        return 8;
+
+      throw std::runtime_error("Unknown encoding " + encoding);
+      return -1;
+    }
+  } // namespace image_encodings
 } // namespace sensor_msgs
 
 #endif
