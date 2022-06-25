@@ -49,6 +49,7 @@ ArenaCameraParameter::ArenaCameraParameter()
   , binning_y_(1)
   , binning_x_given_(false)
   , binning_y_given_(false)
+  , sensor_binning_(true)
   , downsampling_factor_exp_search_(1)
   ,
   // ##########################
@@ -97,6 +98,8 @@ void ArenaCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
   {
     nh.getParam("camera_info_url", camera_info_url_);
   }
+
+  nh.param<bool>("sensor_binning", sensor_binning_, true);
 
   binning_x_given_ = nh.hasParam("binning_x");
   if (binning_x_given_)

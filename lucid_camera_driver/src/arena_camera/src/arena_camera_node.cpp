@@ -101,6 +101,7 @@ namespace arena_camera
     diagnostics_updater_.add("camera_availability", this, &ArenaCameraNode::create_diagnostics);
     diagnostics_updater_.add("intrinsic_calibration", this,
                               &ArenaCameraNode::create_camera_info_diagnostics);
+    
     diagnostics_trigger_ = nh_.createTimer(ros::Duration(2),
                                             &ArenaCameraNode::diagnostics_timer_callback_, this);
 
@@ -144,8 +145,10 @@ namespace arena_camera
 
     // Initialize the CARMA driver discovery publisher.
     discovery_pub_ = new ros::Publisher(nh_.advertise<cav_msgs::DriverStatus>("discovery", 1));
+    
     discovery_msg_.name = "/hardware_interface/camera";
     discovery_msg_.camera = true;
+    
     last_discovery_pub_ = ros::Time::now();
 
     // initAndRegister() creates the target ArenaCamera object with the
@@ -156,7 +159,8 @@ namespace arena_camera
       discovery_msg_.status = cav_msgs::DriverStatus::OFF;
       
       if (last_discovery_pub_ == ros::Time(0) ||
-          (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+          (ros::Time::now() - last_discovery_pub_).toSec() > 0.8)
+      {
           discovery_pub_->publish(discovery_msg_);
           last_discovery_pub_ = ros::Time::now();
       }
@@ -173,7 +177,8 @@ namespace arena_camera
       discovery_msg_.status = cav_msgs::DriverStatus::OFF;
       
       if (last_discovery_pub_ == ros::Time(0) ||
-          (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+          (ros::Time::now() - last_discovery_pub_).toSec() > 0.8)
+      {
           discovery_pub_->publish(discovery_msg_);
           last_discovery_pub_ = ros::Time::now();
       }
@@ -221,7 +226,7 @@ namespace arena_camera
               (device_user_id_to_open.length() < device_user_id_found.length() &&
               (0 ==
                 device_user_id_found.compare(device_user_id_found.length() - device_user_id_to_open.length(),
-                                            device_user_id_to_open.length(), device_user_id_to_open))))
+                                              device_user_id_to_open.length(), device_user_id_to_open))))
           {
             found_desired_device = true;
             
@@ -274,7 +279,8 @@ namespace arena_camera
         discovery_msg_.status = cav_msgs::DriverStatus::OFF;
         
         if (last_discovery_pub_ == ros::Time(0) ||
-            (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+            (ros::Time::now() - last_discovery_pub_).toSec() > 0.8)
+        {
             discovery_pub_->publish(discovery_msg_);
             last_discovery_pub_ = ros::Time::now();
         }
@@ -490,10 +496,13 @@ namespace arena_camera
       
       if (GenApi::IsWritable(pPixelFormat))
       {
-        Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "PixelFormat", gen_api_encoding.c_str());
+        Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(),
+                                                "PixelFormat",
+                                                gen_api_encoding.c_str());
         
         if (currentROSEncoding() == "16UC3" || currentROSEncoding() == "16UC4")
-          ROS_WARN_STREAM("ROS grabbing image data from 3D pixel format, unable to display in image viewer.");
+          ROS_WARN_STREAM("ROS grabbing image data from 3D pixel format, unable to display in "
+                          << "image viewer.");
       }
     }
     catch (const GenICam::GenericException& e)
@@ -556,7 +565,8 @@ namespace arena_camera
                   maximumFrameRate);
       }
       // Desired frame rate is valid.
-      else{
+      else
+      {
         Arena::SetNodeValue<bool>(pNodeMap, "AcquisitionFrameRateEnable", true);
         Arena::SetNodeValue<double>(pNodeMap, "AcquisitionFrameRate", cmdlnParamFrameRate);
         
@@ -664,6 +674,36 @@ namespace arena_camera
         }
       }
 
+      // Switch binning mode.
+      if (arena_camera_parameter_set_.binning_x_given_ || arena_camera_parameter_set_.binning_y_given_)
+      {
+        GenApi::CEnumerationPtr pBinningSelector = pDevice_->GetNodeMap()->GetNode("BinningSelector");
+
+        if (GenApi::IsWritable(pBinningSelector))
+        {
+          if (arena_camera_parameter_set_.sensor_binning_)
+          {
+            Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(),
+                                                    "BinningSelector",
+                                                    "Sensor");
+
+            ROS_INFO_STREAM("Using sensor binning.");
+          }
+          else
+          {
+            Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(),
+                                                    "BinningSelector",
+                                                    "Digital");
+
+            ROS_INFO_STREAM("Using digital binning.");
+          }
+        }
+        else
+        {
+          ROS_WARN_STREAM("Cannot change binning mode.");
+        }
+      }
+
       // Apply horizontal binning.
       if (arena_camera_parameter_set_.binning_x_given_)
       {
@@ -671,8 +711,7 @@ namespace arena_camera
 
         if (setBinningX(arena_camera_parameter_set_.binning_x_, reached_binning_x))
         {
-          ROS_INFO_STREAM("Setting horizontal binning to "
-                          << arena_camera_parameter_set_.binning_x_ << ".");
+          ROS_INFO_STREAM("Setting horizontal binning to " << reached_binning_x << ".");
           ROS_WARN_STREAM("Image width in the CameraInfo message will be adjusted to keep the "
                           << "horizontal binning value in that message at 1.");
         }
@@ -685,13 +724,15 @@ namespace arena_camera
         
         if (setBinningY(arena_camera_parameter_set_.binning_y_, reached_binning_y))
         {
-          ROS_INFO_STREAM("Setting vertical binning_y to " << arena_camera_parameter_set_.binning_y_);
+          ROS_INFO_STREAM("Setting vertical binning to " << reached_binning_y << ".");
           ROS_WARN_STREAM("Image height in the CameraInfo message will be adjusted to keep the "
                           << "vertical binning value in that message at 1.");
         }
       }
 
-      Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetTLStreamNodeMap(), "StreamBufferHandlingMode", "NewestOnly");
+      Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetTLStreamNodeMap(),
+                                              "StreamBufferHandlingMode",
+                                              "NewestOnly");
 
       // Start camera stream and arm the software trigger.
       pDevice_->StartStream();
@@ -849,7 +890,8 @@ namespace arena_camera
       discovery_msg_.status = cav_msgs::DriverStatus::FAULT;
       
       if (last_discovery_pub_ == ros::Time(0) ||
-          (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+          (ros::Time::now() - last_discovery_pub_).toSec() > 0.8)
+      {
           discovery_pub_->publish(discovery_msg_);
           last_discovery_pub_ = ros::Time::now();
       }
@@ -875,7 +917,8 @@ namespace arena_camera
           discovery_msg_.status = cav_msgs::DriverStatus::FAULT;
           
           if (last_discovery_pub_ == ros::Time(0) ||
-              (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+              (ros::Time::now() - last_discovery_pub_).toSec() > 0.8)
+          {
               discovery_pub_->publish(discovery_msg_);
               last_discovery_pub_ = ros::Time::now();
           }
@@ -1001,7 +1044,8 @@ namespace arena_camera
       }
 
       if (last_discovery_pub_ == ros::Time(0) ||
-          (ros::Time::now() - last_discovery_pub_).toSec() > 0.8) {
+          (ros::Time::now() - last_discovery_pub_).toSec() > 0.8)
+      {
           discovery_pub_->publish(discovery_msg_);
           last_discovery_pub_ = ros::Time::now();
       }
@@ -1078,7 +1122,8 @@ namespace arena_camera
 
       for (std::size_t i = 0; i < result.images.size(); ++i)
       {
-        cv_bridge::CvImagePtr cv_img_raw = cv_bridge::toCvCopy(result.images[i], result.images[i].encoding);
+        cv_bridge::CvImagePtr cv_img_raw = cv_bridge::toCvCopy(result.images[i],
+                                                                result.images[i].encoding);
         cv_bridge::CvImage cv_bridge_img_rect;
 
         cv_bridge_img_rect.header = result.images[i].header;
@@ -1606,31 +1651,37 @@ namespace arena_camera
   }
 
   bool ArenaCameraNode::setROICallback(camera_control_msgs::SetROI::Request& req,
-                                      camera_control_msgs::SetROI::Response& res)
+                                        camera_control_msgs::SetROI::Response& res)
   {
     res.success = setROI(req.target_roi, res.reached_roi);
+    
     return true;
   }
 
   bool setBinningXValue(const size_t& target_binning_x, size_t& reached_binning_x)
   {
     try
-    {
-      Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "BinningSelector", "Sensor");
+    { 
       GenApi::CIntegerPtr pBinningHorizontal = pDevice_->GetNodeMap()->GetNode("BinningHorizontal");
+      
       if (GenApi::IsWritable(pBinningHorizontal))
       {
         size_t binning_x_to_set = target_binning_x;
+        
         if (binning_x_to_set < pBinningHorizontal->GetMin())
         {
-          ROS_WARN_STREAM("Desired horizontal binning_x factor(" << binning_x_to_set << ") unreachable! Setting to lower "
-                                                                << "limit: " << pBinningHorizontal->GetMin());
+          ROS_WARN_STREAM("Desired horizontal binning (" << binning_x_to_set << ") unreachable! "
+                          << "Setting it to the lower limit (" << pBinningHorizontal->GetMin()
+                          << ").");
+          
           binning_x_to_set = pBinningHorizontal->GetMin();
         }
         else if (binning_x_to_set > pBinningHorizontal->GetMax())
         {
-          ROS_WARN_STREAM("Desired horizontal binning_x factor(" << binning_x_to_set << ") unreachable! Setting to upper "
-                                                                << "limit: " << pBinningHorizontal->GetMax());
+          ROS_WARN_STREAM("Desired horizontal binning (" << binning_x_to_set << ") unreachable! "
+                          << "Setting it to the upper limit (" << pBinningHorizontal->GetMax()
+                          << ").");
+          
           binning_x_to_set = pBinningHorizontal->GetMax();
         }
 
@@ -1639,18 +1690,20 @@ namespace arena_camera
       }
       else
       {
-        ROS_WARN_STREAM("Camera does not support binning. Will keep the "
-                        << "current settings");
+        ROS_WARN_STREAM("Binning settings cannot be changed while camera is in operation, or camera "
+                        << "does not support binning. Current settings will be kept.");
+
         reached_binning_x = currentBinningX();
       }
     }
-
     catch (const GenICam::GenericException& e)
     {
-      ROS_ERROR_STREAM("An exception while setting target horizontal "
-                      << "binning_x factor to " << target_binning_x << " occurred: " << e.GetDescription());
+      ROS_ERROR_STREAM("An exception occurred while setting horizontal binning to "
+                        << target_binning_x << ": " << e.GetDescription());
+      
       return false;
     }
+    
     return true;
   }
 
@@ -1660,9 +1713,10 @@ namespace arena_camera
 
     if (!setBinningXValue(target_binning_x, reached_binning_x))
     {
-      // retry till timeout
+      // Retry until timeout.
       ros::Rate r(10.0);
       ros::Time timeout(ros::Time::now() + ros::Duration(2.0));
+      
       while (ros::ok())
       {
         if (setBinningXValue(target_binning_x, reached_binning_x))
@@ -1671,18 +1725,12 @@ namespace arena_camera
         }
         if (ros::Time::now() > timeout)
         {
-          ROS_ERROR_STREAM("Error in setBinningX(): Unable to set target "
-                          << "binning_x factor before timeout");
-          CameraInfoPtr cam_info(new CameraInfo(camera_info_manager_->getCameraInfo()));
-          cam_info->binning_x = currentBinningX();
-          camera_info_manager_->setCameraInfo(*cam_info);
-          //   img_raw_msg_.width = pImage_->GetWidth();
-          //  step = full row length in bytes, img_size = (step * rows),
-          //  imagePixelDepth already contains the number of channels
-          //  img_raw_msg_.step = img_raw_msg_.width * (pImage_->GetBitsPerPixel()
-          //  / 8);
+          ROS_ERROR_STREAM("Error in setBinningX(): Unable to set horizontal binning before "
+                            << "timeout.");
+
           return false;
         }
+
         r.sleep();
       }
     }
@@ -1694,21 +1742,26 @@ namespace arena_camera
   {
     try
     {
-      Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "BinningSelector", "Sensor");
       GenApi::CIntegerPtr pBinningVertical = pDevice_->GetNodeMap()->GetNode("BinningVertical");
+      
       if (GenApi::IsWritable(pBinningVertical))
       {
         size_t binning_y_to_set = target_binning_y;
+        
         if (binning_y_to_set < pBinningVertical->GetMin())
         {
-          ROS_WARN_STREAM("Desired horizontal binning_y factor(" << binning_y_to_set << ") unreachable! Setting to lower "
-                                                                << "limit: " << pBinningVertical->GetMin());
+          ROS_WARN_STREAM("Desired vertical binning (" << binning_y_to_set << ") unreachable! "
+                          << "Setting it to the lower limit (" << pBinningVertical->GetMin()
+                          << ").");
+
           binning_y_to_set = pBinningVertical->GetMin();
         }
         else if (binning_y_to_set > pBinningVertical->GetMax())
         {
-          ROS_WARN_STREAM("Desired horizontal binning_y factor(" << binning_y_to_set << ") unreachable! Setting to upper "
-                                                                << "limit: " << pBinningVertical->GetMax());
+          ROS_WARN_STREAM("Desired vertical binning (" << binning_y_to_set << ") unreachable! "
+                          << "Setting it to the upper limit (" << pBinningVertical->GetMax()
+                          << ").");
+          
           binning_y_to_set = pBinningVertical->GetMax();
         }
 
@@ -1717,18 +1770,20 @@ namespace arena_camera
       }
       else
       {
-        ROS_WARN_STREAM("Camera does not support binning. Will keep the "
-                        << "current settings");
+        ROS_WARN_STREAM("Binning settings cannot be changed while camera is in operation, or camera "
+                        << "does not support binning. Current settings will be kept.");
+
         reached_binning_y = currentBinningY();
       }
     }
-
     catch (const GenICam::GenericException& e)
     {
-      ROS_ERROR_STREAM("An exception while setting target horizontal "
-                      << "binning_y factor to " << target_binning_y << " occurred: " << e.GetDescription());
+      ROS_ERROR_STREAM("An exception occurred while setting vertical binning to "
+                        << target_binning_y << ": " << e.GetDescription());
+
       return false;
     }
+
     return true;
   }
 
@@ -1738,9 +1793,10 @@ namespace arena_camera
 
     if (!setBinningYValue(target_binning_y, reached_binning_y))
     {
-      // retry till timeout
+      // Retry until timeout.
       ros::Rate r(10.0);
       ros::Time timeout(ros::Time::now() + ros::Duration(2.0));
+      
       while (ros::ok())
       {
         if (setBinningYValue(target_binning_y, reached_binning_y))
@@ -1749,17 +1805,12 @@ namespace arena_camera
         }
         if (ros::Time::now() > timeout)
         {
-          ROS_ERROR_STREAM("Error in setBinningY(): Unable to set target "
-                          << "binning_y factor before timeout");
-          CameraInfoPtr cam_info(new CameraInfo(camera_info_manager_->getCameraInfo()));
-          cam_info->binning_y = currentBinningY();
-          camera_info_manager_->setCameraInfo(*cam_info);
-          img_raw_msg_.width = pImage_->GetWidth();
-          //  step = full row length in bytes, img_size = (step * rows),
-          //  imagePixelDepth already contains the number of channels
-          img_raw_msg_.step = img_raw_msg_.width * (pImage_->GetBitsPerPixel() / 8);
+          ROS_ERROR_STREAM("Error in setBinningY(): Unable to set vertical binning before "
+                            << "timeout.");
+
           return false;
         }
+
         r.sleep();
       }
     }
@@ -1768,14 +1819,43 @@ namespace arena_camera
   }
 
   bool ArenaCameraNode::setBinningCallback(camera_control_msgs::SetBinning::Request& req,
-                                          camera_control_msgs::SetBinning::Response& res)
+                                            camera_control_msgs::SetBinning::Response& res)
   {
+    GenApi::CEnumerationPtr pBinningSelector = pDevice_->GetNodeMap()->GetNode("BinningSelector");
+
+    if (GenApi::IsWritable(pBinningSelector))
+    {
+      if (arena_camera_parameter_set_.sensor_binning_)
+      {
+        Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(),
+                                                "BinningSelector",
+                                                "Sensor");
+
+        ROS_INFO_STREAM("Using sensor binning.");
+      }
+      else
+      {
+        Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(),
+                                                "BinningSelector",
+                                                "Digital");
+
+        ROS_INFO_STREAM("Using digital binning.");
+      }
+    }
+    else
+    {
+      ROS_WARN_STREAM("Cannot change sensor binning mode.");
+    }
+    
     size_t reached_binning_x, reached_binning_y;
+    
     bool success_x = setBinningX(req.target_binning_x, reached_binning_x);
     bool success_y = setBinningY(req.target_binning_y, reached_binning_y);
+    
     res.reached_binning_x = static_cast<uint32_t>(reached_binning_x);
     res.reached_binning_y = static_cast<uint32_t>(reached_binning_y);
     res.success = success_x && success_y;
+    
     return true;
   }
 
@@ -1788,74 +1868,67 @@ namespace arena_camera
       GenApi::CFloatPtr pExposureTime = pDevice_->GetNodeMap()->GetNode("ExposureTime");
 
       float exposure_to_set = target_exposure;
+      
       if (exposure_to_set < pExposureTime->GetMin())
       {
-        ROS_WARN_STREAM("Desired exposure (" << exposure_to_set << ") "
-                                            << "time unreachable! Setting to lower limit: " << pExposureTime->GetMin());
-        exposure_to_set = pExposureTime->GetMin();
+        ROS_WARN_STREAM("Desired exposure time (" << exposure_to_set << ") unreachable! Setting "
+                        << "it to the lower limit (" << pExposureTime->GetMin() << ").");
+
+        exposure_to_set = pExposureTime->GetMin() + 0.01;
       }
       else if (exposure_to_set > pExposureTime->GetMax())
       {
-        ROS_WARN_STREAM("Desired exposure (" << exposure_to_set << ") "
-                                            << "time unreachable! Setting to upper limit: " << pExposureTime->GetMax());
-        exposure_to_set = pExposureTime->GetMax();
+        ROS_WARN_STREAM("Desired exposure time (" << exposure_to_set << ") unreachable! Setting "
+                        << "it to the upper limit (" << pExposureTime->GetMax() << ").");
+
+        exposure_to_set = pExposureTime->GetMax() - 0.01;
       }
 
       pExposureTime->SetValue(exposure_to_set);
-      reached_exposure = pExposureTime->GetValue();
-
-      // if ( std::fabs(reached_exposure - exposure_to_set) > exposureStep() )
-      // {
-      //     // no success if the delta between target and reached exposure
-      //     // is greater then the exposure step in ms
-      //     return false;
-      // }
+      reached_exposure = currentExposure();
     }
     catch (const GenICam::GenericException& e)
     {
-      ROS_ERROR_STREAM("An exception while setting target exposure to " << target_exposure
-                                                                        << " occurred:" << e.GetDescription());
+      ROS_ERROR_STREAM("An exception occurred while setting exposure time to "
+                        << target_exposure << ": " << e.GetDescription());
+
       return false;
     }
+
     return true;
   }
 
   bool ArenaCameraNode::setExposure(const float& target_exposure, float& reached_exposure)
   {
     boost::lock_guard<boost::recursive_mutex> lock(grab_mutex_);
-    // if ( !pylon_camera_->isReady() )
-    // {
-    //     ROS_WARN("Error in setExposure(): pylon_camera_ is not ready!");
-    //     return false;
-    // }
 
     if (ArenaCameraNode::setExposureValue(target_exposure, reached_exposure))
     {
-      // success if the delta is smaller then the exposure step
       return true;
     }
-    else  // retry till timeout
+    else
     {
-      // wait for max 5s till the cam has updated the exposure
+      // Retry until timeout.
       ros::Rate r(10.0);
       ros::Time timeout(ros::Time::now() + ros::Duration(5.0));
+      
       while (ros::ok())
       {
         if (ArenaCameraNode::setExposureValue(target_exposure, reached_exposure))
         {
-          // success if the delta is smaller then the exposure step
-          return true;
-        }
-
-        if (ros::Time::now() > timeout)
-        {
           break;
         }
+        if (ros::Time::now() > timeout)
+        {
+          ROS_ERROR_STREAM("Error in setExposure(): Unable to set exposure time before timeout.");
+
+          return false;
+        }
+
         r.sleep();
       }
-      ROS_ERROR_STREAM("Error in setExposure(): Unable to set target"
-                      << " exposure before timeout");
-      return false;
+
+      return true;
     }
   }
 
@@ -1863,6 +1936,7 @@ namespace arena_camera
                                             camera_control_msgs::SetExposure::Response& res)
   {
     res.success = setExposure(req.target_exposure, res.reached_exposure);
+    
     return true;
   }
 
@@ -1873,69 +1947,71 @@ namespace arena_camera
       Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "GainAuto", "Off");
 
       GenApi::CFloatPtr pGain = pDevice_->GetNodeMap()->GetNode("Gain");
-      float truncated_gain = target_gain;
-      if (truncated_gain < pGain->GetMin())
+      
+      float gain_fraction = target_gain;
+      
+      if (gain_fraction < 0)
       {
-        ROS_WARN_STREAM("Desired gain (" << target_gain << ") in "
-                                        << "percent out of range [0.0 - 1.0]! Setting to lower "
-                                        << "limit: 0.0");
-        truncated_gain = pGain->GetMin();
+        ROS_WARN_STREAM("Desired gain fraction (" << gain_fraction << ") unreachable! Setting "
+                        << "it to the lower limit (0).");
+        
+        gain_fraction = 0;
       }
-      else if (truncated_gain > pGain->GetMax())
+      else if (gain_fraction > 1)
       {
-        ROS_WARN_STREAM("Desired gain (" << target_gain << ") in "
-                                        << "percent out of range [0.0 - 1.0]! Setting to upper "
-                                        << "limit: 1.0");
-        truncated_gain = pGain->GetMax();
+        ROS_WARN_STREAM("Desired gain fraction (" << gain_fraction << ") unreachable! Setting "
+                        << "it to the upper limit (1).");
+
+        gain_fraction = 1;
       }
 
-      float gain_to_set = pGain->GetMin() + truncated_gain * (pGain->GetMax() - pGain->GetMin());
+      float gain_to_set = pGain->GetMin() + gain_fraction * (pGain->GetMax() - pGain->GetMin());
+      
       pGain->SetValue(gain_to_set);
       reached_gain = currentGain();
     }
     catch (const GenICam::GenericException& e)
     {
-      ROS_ERROR_STREAM("An exception while setting target gain to " << target_gain
-                                                                    << " occurred: " << e.GetDescription());
+      ROS_ERROR_STREAM("An exception occurred while setting gain to " << target_gain << ": "
+                        << e.GetDescription());
+      
       return false;
     }
+    
     return true;
   }
 
   bool ArenaCameraNode::setGain(const float& target_gain, float& reached_gain)
   {
     boost::lock_guard<boost::recursive_mutex> lock(grab_mutex_);
-    // if ( !arena_camera_->isReady() )
-    // {
-    //         ROS_WARN("Error in setGain(): arena_camera_ is not ready!");
-    //         return false;
-    // }
-    //
+
     if (ArenaCameraNode::setGainValue(target_gain, reached_gain))
     {
       return true;
     }
-    else  // retry till timeout
+    else
     {
-      // wait for max 5s till the cam has updated the exposure
+      // Retry until timeout
       ros::Rate r(10.0);
       ros::Time timeout(ros::Time::now() + ros::Duration(5.0));
+      
       while (ros::ok())
       {
         if (ArenaCameraNode::setGainValue(target_gain, reached_gain))
         {
-          return true;
-        }
-
-        if (ros::Time::now() > timeout)
-        {
           break;
         }
+        if (ros::Time::now() > timeout)
+        {
+          ROS_ERROR_STREAM("Error in setGain(): Unable to set gain before timeout.");
+
+          return false;
+        }
+
         r.sleep();
       }
-      ROS_ERROR_STREAM("Error in setGain(): Unable to set target "
-                      << "gain before timeout");
-      return false;
+
+      return true;
     }
   }
 
@@ -1943,19 +2019,22 @@ namespace arena_camera
                                         camera_control_msgs::SetGain::Response& res)
   {
     res.success = setGain(req.target_gain, res.reached_gain);
+    
     return true;
   }
 
-  void disableAllRunningAutoBrightessFunctions()
+  void disableAllRunningAutoBrightnessFunctions()
   {
-    GenApi::CStringPtr pExposureAuto = pNodeMap_->GetNode("ExposureAuto");
-    GenApi::CStringPtr pGainAuto = pNodeMap_->GetNode("GainAuto");
-    if (!pExposureAuto || !GenApi::IsWritable(pExposureAuto) || !pGainAuto || !GenApi::IsWritable(pGainAuto))
+    GenApi::CEnumerationPtr pExposureAuto = pNodeMap_->GetNode("ExposureAuto");
+    GenApi::CEnumerationPtr pGainAuto = pNodeMap_->GetNode("GainAuto");
+
+    if (!pExposureAuto || !GenApi::IsWritable(pExposureAuto) ||
+        !pGainAuto || !GenApi::IsWritable(pGainAuto))
     {
       ROS_WARN_STREAM("Unable to disable auto brightness");
+      
       return;
     }
-
     else
     {
       Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "ExposureAuto", "Off");
@@ -1965,18 +2044,22 @@ namespace arena_camera
 
   bool ArenaCameraNode::setGammaValue(const float& target_gamma, float& reached_gamma)
   {
-    // for GigE cameras you have to enable gamma first
-
     GenApi::CBooleanPtr pGammaEnable = pDevice_->GetNodeMap()->GetNode("GammaEnable");
-    if (GenApi::IsWritable(pGammaEnable))
+    
+    if (pGammaEnable && GenApi::IsWritable(pGammaEnable))
     {
       pGammaEnable->SetValue(true);
     }
 
     GenApi::CFloatPtr pGamma = pDevice_->GetNodeMap()->GetNode("Gamma");
+    
     if (!pGamma || !GenApi::IsWritable(pGamma))
     {
+      ROS_WARN_STREAM("Gamma settings cannot be changed while camera is in operation, or camera "
+                        << "does not support gamma correction. Current settings will be kept.");
+      
       reached_gamma = -1;
+      
       return true;
     }
     else
@@ -1984,65 +2067,76 @@ namespace arena_camera
       try
       {
         float gamma_to_set = target_gamma;
-        if (pGamma->GetMin() > gamma_to_set)
+        
+        if (gamma_to_set < pGamma->GetMin())
         {
+          ROS_WARN_STREAM("Desired gamma (" << gamma_to_set << ") unreachable! Setting it to the "
+                          << "lower limit (" << pGamma->GetMin() << ").");
+
           gamma_to_set = pGamma->GetMin();
-          ROS_WARN_STREAM("Desired gamma unreachable! Setting to lower limit: " << gamma_to_set);
         }
-        else if (pGamma->GetMax() < gamma_to_set)
+        else if (gamma_to_set > pGamma->GetMax())
         {
+          ROS_WARN_STREAM("Desired gamma (" << gamma_to_set << ") unreachable! Setting it to the "
+                          << "upper limit (" << pGamma->GetMax() << ").");
+
           gamma_to_set = pGamma->GetMax();
-          ROS_WARN_STREAM("Desired gamma unreachable! Setting to upper limit: " << gamma_to_set);
         }
+
         pGamma->SetValue(gamma_to_set);
         reached_gamma = currentGamma();
       }
       catch (const GenICam::GenericException& e)
       {
-        ROS_ERROR_STREAM("An exception while setting target gamma to " << target_gamma
-                                                                      << " occurred: " << e.GetDescription());
+        ROS_ERROR_STREAM("An exception occurred while setting gamma to " << target_gamma << ": "
+                          << e.GetDescription());
+        
         return false;
       }
     }
+    
     return true;
   }
 
   bool ArenaCameraNode::setGamma(const float& target_gamma, float& reached_gamma)
   {
     boost::lock_guard<boost::recursive_mutex> lock(grab_mutex_);
+    
     if (ArenaCameraNode::setGammaValue(target_gamma, reached_gamma))
     {
       return true;
     }
-    else  // retry till timeout
+    else
     {
-      // wait for max 5s till the cam has updated the gamma value
+      // Retry until timeout.
       ros::Rate r(10.0);
       ros::Time timeout(ros::Time::now() + ros::Duration(5.0));
+      
       while (ros::ok())
       {
         if (ArenaCameraNode::setGammaValue(target_gamma, reached_gamma))
         {
-          return true;
-        }
-
-        if (ros::Time::now() > timeout)
-        {
           break;
         }
+        if (ros::Time::now() > timeout)
+        {
+          ROS_ERROR_STREAM("Error in setGamma(): Unable to set gamma before timeout.");
+
+          return false;
+        }
+
         r.sleep();
       }
-      ROS_ERROR_STREAM("Error in setGamma(): Unable to set target "
-                      << "gamma before timeout");
-      return false;
+
+      return true;
     }
-    return true;
   }
 
   bool ArenaCameraNode::setGammaCallback(camera_control_msgs::SetGamma::Request& req,
-                                        camera_control_msgs::SetGamma::Response& res)
+                                          camera_control_msgs::SetGamma::Response& res)
   {
     res.success = setGamma(req.target_gamma, res.reached_gamma);
+    
     return true;
   }
 
@@ -2097,7 +2191,7 @@ namespace arena_camera
 
     // initially cancel all running exposure search by deactivating
     // ExposureAuto & AutoGain
-    disableAllRunningAutoBrightessFunctions();
+    disableAllRunningAutoBrightnessFunctions();
 
     if (target_brightness_co <= 50)
     {
@@ -2157,7 +2251,7 @@ namespace arena_camera
       //                                    exposure_auto,
       //                                    gain_auto) )
       // {
-      //         disableAllRunningAutoBrightessFunctions();
+      //         disableAllRunningAutoBrightnessFunctions();
       //         break;
       // }
 
@@ -2185,7 +2279,7 @@ namespace arena_camera
       //
       // if ( is_brightness_reached )
       // {
-      //         disableAllRunningAutoBrightessFunctions();
+      //         disableAllRunningAutoBrightnessFunctions();
       //         break;
       // }
 
@@ -2205,7 +2299,7 @@ namespace arena_camera
         ROS_WARN_STREAM("Seems like the desired brightness ("
                         << target_brightness_co << ") is not reachable! Stuck at brightness " << current_brightness
                         << " and exposure " << currentExposure() << "us");
-        disableAllRunningAutoBrightessFunctions();
+        disableAllRunningAutoBrightnessFunctions();
         reached_brightness = static_cast<int>(current_brightness);
         return false;
       }
@@ -2213,7 +2307,7 @@ namespace arena_camera
       if (ros::Time::now() > timeout)
       {
         // cancel all running brightness search by deactivating ExposureAuto
-        disableAllRunningAutoBrightessFunctions();
+        disableAllRunningAutoBrightnessFunctions();
         ROS_WARN_STREAM("Did not reach the target brightness before "
                         << "timeout of " << (timeout - start_time).sec << " sec! Stuck at brightness "
                         << current_brightness << " and exposure " << currentExposure() << "us");

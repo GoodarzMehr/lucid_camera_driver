@@ -128,6 +128,11 @@ public:
   bool binning_x_given_;
   bool binning_y_given_;
 
+  /**
+   * Flag indicating whether sensor or digital binning is used.
+   */
+  bool sensor_binning_;
+
   bool image_encoding_given_;
 
   /**
