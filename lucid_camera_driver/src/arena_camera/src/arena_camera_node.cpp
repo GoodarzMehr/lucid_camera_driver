@@ -93,8 +93,6 @@ namespace arena_camera
     , pinhole_model_(nullptr)
     , cv_bridge_img_rect_(nullptr)
     , camera_info_manager_(new camera_info_manager::CameraInfoManager(nh_))
-    , sampling_indices_()
-    , brightness_exp_lut_()
     , is_sleeping_(false)
   {
     diagnostics_updater_.setHardwareID("none");
@@ -772,6 +770,20 @@ namespace arena_camera
       // has 8-bit Bayer pattern encoding. It will just publish the raw image
       // if it has 8-bit three channel (RGB or BGR) encoding.
       img_scaled_pub_ = new ros::Publisher(nh_.advertise<sensor_msgs::Image>("image_scaled", 1));
+
+      // Prepare to set brightness.
+      brightness_given = false;
+      
+      if (arena_camera_parameter_set_.brightness_given_ &&
+            (arena_camera_parameter_set_.exposure_auto_ ||
+              arena_camera_parameter_set_.gain_auto_))
+      {
+        brightness_given = true;
+        brightness_set = false;
+
+        Arena::SetNodeValue<GenICam::gcstring>(pNodeMap, "ExposureAuto", "Off");
+        Arena::SetNodeValue<GenICam::gcstring>(pNodeMap, "GainAuto", "Off");
+      }
     }
     catch (GenICam::GenericException& e)
     {
@@ -1041,6 +1053,29 @@ namespace arena_camera
         ROS_INFO_ONCE("Publishing scaled images.");
 
         discovery_msg_.status = cav_msgs::DriverStatus::OPERATIONAL;
+      }
+
+      // Set brightness.
+      if (brightness_given && !brightness_set)
+      {
+        // Set brightness, only if either auto exposure or auto gain is turned
+        // on.
+        if (arena_camera_parameter_set_.brightness_given_ &&
+            (arena_camera_parameter_set_.exposure_auto_ ||
+              arena_camera_parameter_set_.gain_auto_))
+        {
+          int reached_brightness;
+
+          if (setBrightness(arena_camera_parameter_set_.brightness_, reached_brightness,
+                            arena_camera_parameter_set_.exposure_auto_,
+                            arena_camera_parameter_set_.gain_auto_))
+          {
+            ROS_INFO_STREAM("Setting brightness to " << arena_camera_parameter_set_.brightness_
+                            << ", reached: " << reached_brightness << ".");
+          }
+        }
+
+        brightness_set = true;
       }
 
       if (last_discovery_pub_ == ros::Time(0) ||
@@ -2140,312 +2175,127 @@ namespace arena_camera
     return true;
   }
 
-  bool ArenaCameraNode::setBrightness(const int& target_brightness, int& reached_brightness, const bool& exposure_auto,
-                                      const bool& gain_auto)
+  bool ArenaCameraNode::setBrightnessValue(const int& target_brightness, int& reached_brightness,
+                                            const bool& exposure_auto, const bool& gain_auto)
   {
-    boost::lock_guard<boost::recursive_mutex> lock(grab_mutex_);
-    ros::Time begin = ros::Time::now();  // time measurement for the exposure search
-
-    // brightness service can only work, if an image has already been grabbed,
-    // because it calculates the mean on the current image. The interface is
-    // ready if the grab-result-pointer of the first acquisition contains
-    // valid data
-    int target_brightness_co = std::min(255, target_brightness);
-    // smart brightness search initially sets the last rememberd exposure time
-    if (brightness_exp_lut_.at(target_brightness_co) != 0.0)
+    try
     {
-      float reached_exp;
-      if (!setExposure(brightness_exp_lut_.at(target_brightness_co), reached_exp))
+      GenApi::CIntegerPtr pBrightness = pDevice_->GetNodeMap()->GetNode("TargetBrightness");
+      
+      if (!exposure_auto && !gain_auto)
       {
-        ROS_WARN_STREAM("Tried to speed-up exposure search with initial"
-                        << " guess, but setting the exposure failed!");
+        Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "ExposureAuto", "Off");
+        Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "GainAuto", "Off");
+        
+        ROS_WARN_STREAM("Cannot change brightness because both exposure time and gain have been "
+                        << "manually set. Turn either auto exposure or auto gain on.");
+
+        reached_brightness = pBrightness->GetValue();
+
+        return true;
       }
       else
       {
-        ROS_DEBUG_STREAM("Speed-up exposure search with initial exposure"
-                        << " guess of " << reached_exp);
-      }
-    }
-
-    // get actual image -> fills img_raw_msg_.data vector
-    if (!grabImage())
-    {
-      ROS_ERROR("Failed to grab image, can't calculate current brightness!");
-      return false;
-    }
-
-    // calculates current brightness by generating the mean over all pixels
-    // stored in img_raw_msg_.data vector
-    float current_brightness = calcCurrentBrightness();
-
-    ROS_DEBUG_STREAM("New brightness request for target brightness " << target_brightness_co
-                                                                    << ", current brightness = " << current_brightness);
-
-    if (std::fabs(current_brightness - static_cast<float>(target_brightness_co)) <= 1.0)
-    {
-      reached_brightness = static_cast<int>(current_brightness);
-      ros::Time end = ros::Time::now();
-      ROS_DEBUG_STREAM("Brightness reached without exposure search, duration: " << (end - begin).toSec());
-      return true;  // target brightness already reached
-    }
-
-    // initially cancel all running exposure search by deactivating
-    // ExposureAuto & AutoGain
-    disableAllRunningAutoBrightnessFunctions();
-
-    if (target_brightness_co <= 50)
-    {
-      // own binary-exp search: we need to have the upper bound -> ArenaAuto
-      // exposure to a initial start value of 50 provides it
-      if (brightness_exp_lut_.at(50) != 0.0)
-      {
-        float reached_exp;
-        if (!setExposure(brightness_exp_lut_.at(50), reached_exp))
+        if (exposure_auto)
         {
-          ROS_WARN_STREAM("Tried to speed-up exposure search with initial"
-                          << " guess, but setting the exposure failed!");
+          Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "ExposureAuto",
+                                                  "Continuous");
         }
         else
         {
-          ROS_DEBUG_STREAM("Speed-up exposure search with initial exposure"
-                          << " guess of " << reached_exp);
+          Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "ExposureAuto", "Off");
+        }
+
+        if (gain_auto)
+        {
+          Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "GainAuto", "Continuous");
+        }
+        else
+        {
+          Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "GainAuto", "Off");
         }
       }
-    }
+      
+      float brightness_to_set = target_brightness;
+      
+      if (brightness_to_set < pBrightness->GetMin())
+      {
+        ROS_WARN_STREAM("Desired brightness (" << brightness_to_set << ") unreachable! Setting "
+                        << "it to the lower limit (" << pBrightness->GetMin() << ").");
 
-    if (!exposure_auto && !gain_auto)
+        brightness_to_set = pBrightness->GetMin();
+      }
+      else if (brightness_to_set > pBrightness->GetMax())
+      {
+        ROS_WARN_STREAM("Desired brightness (" << brightness_to_set << ") unreachable! Setting "
+                        << "it to the upper limit (" << pBrightness->GetMax() << ").");
+
+        brightness_to_set = pBrightness->GetMax();
+      }
+
+      pBrightness->SetValue(brightness_to_set);
+      reached_brightness = pBrightness->GetValue();
+    }
+    catch (const GenICam::GenericException& e)
     {
-      ROS_WARN_STREAM("Neither Auto Exposure Time ('exposure_auto') nor Auto "
-                      << "Gain ('gain_auto') are enabled! Hence gain and exposure time "
-                      << "are assumed to be fix and the target brightness (" << target_brightness_co
-                      << ") can not be reached!");
+      ROS_ERROR_STREAM("An exception occurred while setting brightness to " << target_brightness
+                        << ": " << e.GetDescription());
+      
       return false;
     }
-
-    bool is_brightness_reached = false;
-    size_t fail_safe_ctr = 0;
-    size_t fail_safe_ctr_limit = 10;
-
-    float last_brightness = std::numeric_limits<float>::max();
-
-    // timeout for the exposure search -> need more time for great exposure values
-    ros::Time start_time = ros::Time::now();
-    ros::Time timeout = start_time;
-    if (target_brightness_co < 205)
+    
+    return true;
+  }
+  
+  bool ArenaCameraNode::setBrightness(const int& target_brightness, int& reached_brightness,
+                                      const bool& exposure_auto, const bool& gain_auto)
+  {
+    boost::lock_guard<boost::recursive_mutex> lock(grab_mutex_);
+    
+    if (ArenaCameraNode::setBrightnessValue(target_brightness, reached_brightness,
+                                            exposure_auto, gain_auto))
     {
-      timeout += ros::Duration(arena_camera_parameter_set_.exposure_search_timeout_);
+      return true;
     }
     else
     {
-      timeout += ros::Duration(10.0 + arena_camera_parameter_set_.exposure_search_timeout_);
+      // Retry until timeout.
+      ros::Rate r(10.0);
+      ros::Time timeout(ros::Time::now() + ros::Duration(5.0));
+      
+      while (ros::ok())
+      {
+        if (ArenaCameraNode::setBrightnessValue(target_brightness, reached_brightness,
+                                                exposure_auto, gain_auto))
+        {
+          break;
+        }
+        if (ros::Time::now() > timeout)
+        {
+          ROS_ERROR_STREAM("Error in setBrightness(): Unable to set brightness before timeout.");
+
+          return false;
+        }
+
+        r.sleep();
+      }
+
+      return true;
     }
-
-    while (ros::ok())
-    {
-      // calling setBrightness in every cycle would not be necessary for the arena
-      // auto brightness search. But for the case that the target brightness is
-      // out of the arena range which is from [50 - 205] a binary exposure search
-      // will be executed where we have to update the search parameter in every
-      // cycle if ( !arena_camera_->setBrightness(target_brightness_co,
-      //                                    current_brightness,
-      //                                    exposure_auto,
-      //                                    gain_auto) )
-      // {
-      //         disableAllRunningAutoBrightnessFunctions();
-      //         break;
-      // }
-
-      if (!grabImage())
-      {
-        return false;
-      }
-
-      // if ( arena_camera_->isArenaAutoBrightnessFunctionRunning() )
-      // {
-      //         // do nothing if the arena auto function is running, we need to
-      //         // wait till it's finished
-      //         /*
-      //            ROS_DEBUG_STREAM("ArenaAutoBrightnessFunction still running! "
-      //             << " Current brightness: " << calcCurrentBrightness()
-      //             << ", current exposure: " << currentExposure());
-      //          */
-      //         continue;
-      // }
-
-      current_brightness = calcCurrentBrightness();
-      // is_brightness_reached = fabs(current_brightness -
-      // static_cast<float>(target_brightness_co))
-      //                         < arena_camera_->maxBrightnessTolerance();
-      //
-      // if ( is_brightness_reached )
-      // {
-      //         disableAllRunningAutoBrightnessFunctions();
-      //         break;
-      // }
-
-      if (std::fabs(last_brightness - current_brightness) <= 1.0)
-      {
-        fail_safe_ctr++;
-      }
-      else
-      {
-        fail_safe_ctr = 0;
-      }
-
-      last_brightness = current_brightness;
-
-      if ((fail_safe_ctr > fail_safe_ctr_limit) && !is_brightness_reached)
-      {
-        ROS_WARN_STREAM("Seems like the desired brightness ("
-                        << target_brightness_co << ") is not reachable! Stuck at brightness " << current_brightness
-                        << " and exposure " << currentExposure() << "us");
-        disableAllRunningAutoBrightnessFunctions();
-        reached_brightness = static_cast<int>(current_brightness);
-        return false;
-      }
-
-      if (ros::Time::now() > timeout)
-      {
-        // cancel all running brightness search by deactivating ExposureAuto
-        disableAllRunningAutoBrightnessFunctions();
-        ROS_WARN_STREAM("Did not reach the target brightness before "
-                        << "timeout of " << (timeout - start_time).sec << " sec! Stuck at brightness "
-                        << current_brightness << " and exposure " << currentExposure() << "us");
-        reached_brightness = static_cast<int>(current_brightness);
-        return false;
-      }
-    }
-
-    ROS_DEBUG_STREAM("Finally reached brightness: " << current_brightness);
-    reached_brightness = static_cast<int>(current_brightness);
-
-    // store reached brightness - exposure tuple for next times search
-    if (is_brightness_reached)
-    {
-      if (brightness_exp_lut_.at(reached_brightness) == 0.0)
-      {
-        brightness_exp_lut_.at(reached_brightness) = currentExposure();
-      }
-      else
-      {
-        brightness_exp_lut_.at(reached_brightness) += currentExposure();
-        brightness_exp_lut_.at(reached_brightness) *= 0.5;
-      }
-      if (brightness_exp_lut_.at(target_brightness_co) == 0.0)
-      {
-        brightness_exp_lut_.at(target_brightness_co) = currentExposure();
-      }
-      else
-      {
-        brightness_exp_lut_.at(target_brightness_co) += currentExposure();
-        brightness_exp_lut_.at(target_brightness_co) *= 0.5;
-      }
-    }
-    ros::Time end = ros::Time::now();
-    ROS_DEBUG_STREAM("Brightness search duration: " << (end - begin).toSec());
-    return is_brightness_reached;
   }
-
+  
   bool ArenaCameraNode::setBrightnessCallback(camera_control_msgs::SetBrightness::Request& req,
                                               camera_control_msgs::SetBrightness::Response& res)
   {
-    res.success = setBrightness(req.target_brightness, res.reached_brightness, req.exposure_auto, req.gain_auto);
-    /*if (req.brightness_continuous)
-    {
-      if (req.exposure_auto)
-      {
-        arena_camera_->enableContinuousAutoExposure();
-      }
-      if (req.gain_auto)
-      {
-        arena_camera_->enableContinuousAutoGain();
-      }
-    } */
+    res.success = setBrightness(req.target_brightness, res.reached_brightness, req.exposure_auto,
+                                req.gain_auto);
+
+    ros::Duration(2).sleep();
+    
     res.reached_exposure_time = currentExposure();
     res.reached_gain_value = currentGain();
+    
     return true;
-  }
-
-  void ArenaCameraNode::setupSamplingIndices(std::vector<std::size_t>& indices, std::size_t rows, std::size_t cols,
-                                            int downsampling_factor)
-  {
-    indices.clear();
-    std::size_t min_window_height = static_cast<float>(rows) / static_cast<float>(downsampling_factor);
-    cv::Point2i start_pt(0, 0);
-    cv::Point2i end_pt(cols, rows);
-    // add the iamge center point only once
-    sampling_indices_.push_back(0.5 * rows * cols);
-    genSamplingIndicesRec(indices, min_window_height, start_pt, end_pt);
-    std::sort(indices.begin(), indices.end());
-    return;
-  }
-
-  void ArenaCameraNode::genSamplingIndicesRec(std::vector<std::size_t>& indices, const std::size_t& min_window_height,
-                                              const cv::Point2i& s,  // start
-                                              const cv::Point2i& e)  // end
-  {
-    if (static_cast<std::size_t>(std::abs(e.y - s.y)) <= min_window_height)
-    {
-      return;  // abort criteria -> shrinked window has the min_col_size
-    }
-    /*
-    * sampled img:      point:                             idx:
-    * s 0 0 0 0 0 0  a) [(e.x-s.x)*0.5, (e.y-s.y)*0.5]     a.x*a.y*0.5
-    * 0 0 0 d 0 0 0  b) [a.x,           1.5*a.y]           b.y*img_rows+b.x
-    * 0 0 0 0 0 0 0  c) [0.5*a.x,       a.y]               c.y*img_rows+c.x
-    * 0 c 0 a 0 f 0  d) [a.x,           0.5*a.y]           d.y*img_rows+d.x
-    * 0 0 0 0 0 0 0  f) [1.5*a.x,       a.y]               f.y*img_rows+f.x
-    * 0 0 0 b 0 0 0
-    * 0 0 0 0 0 0 e
-    */
-    cv::Point2i a, b, c, d, f, delta;
-    a = s + 0.5 * (e - s);  // center point
-    delta = 0.5 * (e - s);
-    b = s + cv::Point2i(delta.x, 1.5 * delta.y);
-    c = s + cv::Point2i(0.5 * delta.x, delta.y);
-    d = s + cv::Point2i(delta.x, 0.5 * delta.y);
-    f = s + cv::Point2i(1.5 * delta.x, delta.y);
-    indices.push_back(b.y * pImage_->GetWidth() + b.x);
-    indices.push_back(c.y * pImage_->GetWidth() + c.x);
-    indices.push_back(d.y * pImage_->GetWidth() + d.x);
-    indices.push_back(f.y * pImage_->GetWidth() + f.x);
-    genSamplingIndicesRec(indices, min_window_height, s, a);
-    genSamplingIndicesRec(indices, min_window_height, a, e);
-    genSamplingIndicesRec(indices, min_window_height, cv::Point2i(s.x, a.y), cv::Point2i(a.x, e.y));
-    genSamplingIndicesRec(indices, min_window_height, cv::Point2i(a.x, s.y), cv::Point2i(e.x, a.y));
-    return;
-  }
-
-  float ArenaCameraNode::calcCurrentBrightness()
-  {
-    boost::lock_guard<boost::recursive_mutex> lock(grab_mutex_);
-    if (img_raw_msg_.data.empty())
-    {
-      return 0.0;
-    }
-    float sum = 0.0;
-    if (sensor_msgs::image_encodings::isMono(img_raw_msg_.encoding))
-    {
-      // The mean brightness is calculated using a subset of all pixels
-      for (const std::size_t& idx : sampling_indices_)
-      {
-        sum += img_raw_msg_.data.at(idx);
-      }
-      if (sum > 0.0)
-      {
-        sum /= static_cast<float>(sampling_indices_.size());
-      }
-    }
-    else
-    {
-      // The mean brightness is calculated using all pixels and all channels
-      sum = std::accumulate(img_raw_msg_.data.begin(), img_raw_msg_.data.end(), 0);
-      if (sum > 0.0)
-      {
-        sum /= static_cast<float>(img_raw_msg_.data.size());
-      }
-    }
-    return sum;
   }
 
   bool ArenaCameraNode::setSleepingCallback(camera_control_msgs::SetSleeping::Request& req,

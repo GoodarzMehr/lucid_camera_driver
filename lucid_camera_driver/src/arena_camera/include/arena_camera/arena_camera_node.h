@@ -219,12 +219,13 @@ namespace arena_camera
       bool setExposureCallback(camera_control_msgs::SetExposure::Request& req,
                                 camera_control_msgs::SetExposure::Response& res);
 
+      bool setBrightnessValue(const int& target_brightness, int& reached_brightness,
+                              const bool& exposure_auto, const bool& gain_auto);
+      
       /**
       * Sets the target brightness which is the intensity-mean over all pixels.
       * If the target exposure time is not in the range of Arena's auto target
       * brightness range the extended brightness search is started.
-      * The Auto function of the Arena-API supports values from [50 - 205].
-      * Using a binary search, this range will be extended up to [1 - 255].
       * @param target_brightness is the desired brightness. Range is [1...255].
       * @param current_brightness is the current brightness with the given settings.
       * @param exposure_auto flag which indicates if the target_brightness
@@ -297,31 +298,6 @@ namespace arena_camera
       * @return true if in sleep mode.
       */
       bool isSleeping();
-
-      /**
-      * Generates the subset of points on which the brightness search will be
-      * executed in order to speed it up. The subset contains the indices of the
-      * one-dimensional image_raw data vector. The base generation is done in a
-      * recursive manner, by calling genSamplingIndicesRec
-      * @return indices describing the subset of points.
-      */
-      void setupSamplingIndices(std::vector<std::size_t>& indices, std::size_t rows,
-                                std::size_t cols, int downsampling_factor);
-
-      /**
-      * This function will be recursively called from above setupSamplingIndices()
-      * to generate the indices of pixels given the actual ROI.
-      * @return indices describing the subset of points.
-      */
-      void genSamplingIndicesRec(std::vector<std::size_t>& indices,
-                                const std::size_t& min_window_height,
-                                const cv::Point2i& start, const cv::Point2i& end);
-
-      /**
-      * Calculates the mean brightness of the image based on the subset indices.
-      * @return the mean brightness of the image.
-      */
-      float calcCurrentBrightness();
 
       /**
       * Callback for the grab images action.
@@ -409,16 +385,16 @@ namespace arena_camera
       camera_info_manager::CameraInfoManager* camera_info_manager_;
 
       /**
-      * Brightness control.
-      */
-      std::vector<std::size_t> sampling_indices_;
-      std::array<float, 256> brightness_exp_lut_;
-
-      /**
       * Sleeping control.
       */
       bool is_sleeping_;
       boost::recursive_mutex grab_mutex_;
+
+      /**
+      * Brightness control.
+      */
+      bool brightness_given;
+      bool brightness_set;
 
       /**
       * Diagnostics.

@@ -61,7 +61,7 @@ ArenaCameraParameter::ArenaCameraParameter()
   , gain_given_(false)
   , gamma_(1.0)
   , gamma_given_(false)
-  , brightness_(100)
+  , brightness_(70)
   , brightness_given_(false)
   , brightness_continuous_(false)
   , exposure_auto_(true)
@@ -70,7 +70,7 @@ ArenaCameraParameter::ArenaCameraParameter()
   // #########################
   exposure_search_timeout_(5.)
   , auto_exp_upper_lim_(0.0)
-  , mtu_size_(3000)
+  , mtu_size_(9000)
   , inter_pkg_delay_(1000)
   , shutter_mode_(SM_DEFAULT)
   , auto_flash_(false)
@@ -321,7 +321,7 @@ void ArenaCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
   else if(gain_given_  && !gain_auto_given && gain_auto_)
   {
     gain_auto_ = false; // change because it defaults to true; 
-    //no msg it is not take from the param server
+    //no msg it is not take from the param servgain_auto_er
   }
   // 7 TTF
   else if(gain_given_ && gain_auto_given && !gain_auto_){
