@@ -806,8 +806,8 @@ namespace arena_camera
     ROS_INFO_STREAM("Startup settings: "
                     << "encoding = '" << currentROSEncoding() << "', "
                     << "binning = [" << currentBinningX() << ", " << currentBinningY() << "], "
-                    << "exposure = " << currentExposure() << ", "
-                    << "gain = " << currentGain() << ", "
+                    << "exposure = " << currentExposure() << " us, "
+                    << "gain = " << currentGain() << " dB, "
                     << "gamma = " << currentGamma() << ", "
                     << "shutter mode = " << arena_camera_parameter_set_.shutterModeString()
                     << ".");
@@ -1066,13 +1066,9 @@ namespace arena_camera
         {
           int reached_brightness;
 
-          if (setBrightness(arena_camera_parameter_set_.brightness_, reached_brightness,
-                            arena_camera_parameter_set_.exposure_auto_,
-                            arena_camera_parameter_set_.gain_auto_))
-          {
-            ROS_INFO_STREAM("Setting brightness to " << arena_camera_parameter_set_.brightness_
-                            << ", reached: " << reached_brightness << ".");
-          }
+          setBrightness(arena_camera_parameter_set_.brightness_, reached_brightness,
+                        arena_camera_parameter_set_.exposure_auto_,
+                        arena_camera_parameter_set_.gain_auto_);
         }
 
         brightness_set = true;
@@ -1722,6 +1718,9 @@ namespace arena_camera
 
         pBinningHorizontal->SetValue(binning_x_to_set);
         reached_binning_x = currentBinningX();
+
+        ROS_INFO_STREAM("Setting horizontal binning to " << binning_x_to_set << ", reached: "
+                        << reached_binning_x << ".");
       }
       else
       {
@@ -1802,6 +1801,9 @@ namespace arena_camera
 
         pBinningVertical->SetValue(binning_y_to_set);
         reached_binning_y = currentBinningY();
+
+        ROS_INFO_STREAM("Setting vertical binning to " << binning_y_to_set << ", reached: "
+                      << reached_binning_y << ".");
       }
       else
       {
@@ -1921,6 +1923,9 @@ namespace arena_camera
 
       pExposureTime->SetValue(exposure_to_set);
       reached_exposure = currentExposure();
+
+      ROS_INFO_STREAM("Setting exposure time to " << exposure_to_set << " us, reached: "
+                      << reached_exposure << " us.");
     }
     catch (const GenICam::GenericException& e)
     {
@@ -2004,6 +2009,9 @@ namespace arena_camera
       
       pGain->SetValue(gain_to_set);
       reached_gain = currentGain();
+
+      ROS_INFO_STREAM("Setting gain to " << gain_to_set << " dB, reached: " << reached_gain
+                      << " dB.");
     }
     catch (const GenICam::GenericException& e)
     {
@@ -2058,25 +2066,6 @@ namespace arena_camera
     return true;
   }
 
-  void disableAllRunningAutoBrightnessFunctions()
-  {
-    GenApi::CEnumerationPtr pExposureAuto = pNodeMap_->GetNode("ExposureAuto");
-    GenApi::CEnumerationPtr pGainAuto = pNodeMap_->GetNode("GainAuto");
-
-    if (!pExposureAuto || !GenApi::IsWritable(pExposureAuto) ||
-        !pGainAuto || !GenApi::IsWritable(pGainAuto))
-    {
-      ROS_WARN_STREAM("Unable to disable auto brightness");
-      
-      return;
-    }
-    else
-    {
-      Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "ExposureAuto", "Off");
-      Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "GainAuto", "Off");
-    }
-  }
-
   bool ArenaCameraNode::setGammaValue(const float& target_gamma, float& reached_gamma)
   {
     GenApi::CBooleanPtr pGammaEnable = pDevice_->GetNodeMap()->GetNode("GammaEnable");
@@ -2120,6 +2109,9 @@ namespace arena_camera
 
         pGamma->SetValue(gamma_to_set);
         reached_gamma = currentGamma();
+
+        ROS_INFO_STREAM("Setting gamma to " << gamma_to_set << ", reached: " << reached_gamma
+                        << ".");
       }
       catch (const GenICam::GenericException& e)
       {
@@ -2184,9 +2176,6 @@ namespace arena_camera
       
       if (!exposure_auto && !gain_auto)
       {
-        Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "ExposureAuto", "Off");
-        Arena::SetNodeValue<GenICam::gcstring>(pDevice_->GetNodeMap(), "GainAuto", "Off");
-        
         ROS_WARN_STREAM("Cannot change brightness because both exposure time and gain have been "
                         << "manually set. Turn either auto exposure or auto gain on.");
 
@@ -2216,7 +2205,7 @@ namespace arena_camera
         }
       }
       
-      float brightness_to_set = target_brightness;
+      int brightness_to_set = target_brightness;
       
       if (brightness_to_set < pBrightness->GetMin())
       {
@@ -2235,6 +2224,9 @@ namespace arena_camera
 
       pBrightness->SetValue(brightness_to_set);
       reached_brightness = pBrightness->GetValue();
+
+      ROS_INFO_STREAM("Setting brightness to " << brightness_to_set << ", reached: "
+                      << reached_brightness << ".");
     }
     catch (const GenICam::GenericException& e)
     {
@@ -2287,10 +2279,10 @@ namespace arena_camera
   bool ArenaCameraNode::setBrightnessCallback(camera_control_msgs::SetBrightness::Request& req,
                                               camera_control_msgs::SetBrightness::Response& res)
   {
-    res.success = setBrightness(req.target_brightness, res.reached_brightness, req.exposure_auto,
-                                req.gain_auto);
+    res.success = setBrightness(req.target_brightness, res.reached_brightness,
+                                req.exposure_auto, req.gain_auto);
 
-    ros::Duration(2).sleep();
+    ros::Duration(2.0).sleep();
     
     res.reached_exposure_time = currentExposure();
     res.reached_gain_value = currentGain();
@@ -2305,14 +2297,15 @@ namespace arena_camera
 
     if (is_sleeping_)
     {
-      ROS_INFO("Setting Arena Camera Node to sleep...");
+      ROS_WARN_STREAM("Putting the camera to sleep.");
     }
     else
     {
-      ROS_INFO("Arena Camera Node continues grabbing");
+      ROS_WARN_STREAM("Waking up the camera.");
     }
 
     res.success = true;
+    
     return true;
   }
 
@@ -2327,45 +2320,52 @@ namespace arena_camera
     {
       pSystem_->DestroyDevice(pDevice_);
     }
-
     if (pSystem_ != nullptr)
     {
       Arena::CloseSystem(pSystem_);
     }
-
     if (it_)
     {
       delete it_;
+      
       it_ = nullptr;
     }
     if (grab_imgs_rect_as_)
     {
       grab_imgs_rect_as_->shutdown();
+      
       delete grab_imgs_rect_as_;
+      
       grab_imgs_rect_as_ = nullptr;
     }
-
     if (img_rect_pub_)
     {
       delete img_rect_pub_;
+      
       img_rect_pub_ = nullptr;
     }
-
     if (cv_bridge_img_rect_)
     {
       delete cv_bridge_img_rect_;
+      
       cv_bridge_img_rect_ = nullptr;
     }
-
     if (img_scaled_pub_)
     {
       delete img_scaled_pub_;
+      
       img_scaled_pub_ = nullptr;
     }
-
+    if (discovery_pub_)
+    {
+      delete discovery_pub_;
+      
+      discovery_pub_ = nullptr;
+    }
     if (pinhole_model_)
     {
       delete pinhole_model_;
+      
       pinhole_model_ = nullptr;
     }
   }

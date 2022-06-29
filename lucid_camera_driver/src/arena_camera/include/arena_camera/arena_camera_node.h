@@ -400,8 +400,9 @@ namespace arena_camera
       * Diagnostics.
       */
       diagnostic_updater::Updater diagnostics_updater_;
-      void diagnostics_timer_callback_(const ros::TimerEvent&);
       ros::Timer diagnostics_trigger_;
+      
+      void diagnostics_timer_callback_(const ros::TimerEvent&);
       void create_diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat);
       void create_camera_info_diagnostics(diagnostic_updater::DiagnosticStatusWrapper& stat);
 
