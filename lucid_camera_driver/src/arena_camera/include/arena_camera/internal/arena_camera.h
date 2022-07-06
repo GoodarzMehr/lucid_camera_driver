@@ -43,144 +43,135 @@
 
 namespace arena_camera
 {
+    template <typename CameraTraitT>
+    
+    class ArenaCameraImpl : public ArenaCamera
+    {
+        public:
+            explicit ArenaCameraImpl();
 
-template <typename CameraTraitT>
-class ArenaCameraImpl : public ArenaCamera
-{
-public:
-explicit ArenaCameraImpl();
+            virtual ~ArenaCameraImpl();
 
-virtual ~ArenaCameraImpl();
+            virtual bool registerCameraConfiguration();
 
-virtual bool registerCameraConfiguration();
+            virtual bool openCamera();
 
-virtual bool openCamera();
+            virtual bool isCamRemoved();
 
-virtual bool isCamRemoved();
+            virtual bool setupSequencer(const std::vector<float>& exposure_times);
 
-virtual bool setupSequencer(const std::vector<float>& exposure_times);
+            virtual bool applyCamSpecificStartupSettings(const ArenaCameraParameter& parameters);
 
-virtual bool applyCamSpecificStartupSettings(const ArenaCameraParameter& parameters);
+            virtual bool startGrabbing(const ArenaCameraParameter& parameters);
 
-virtual bool startGrabbing(const ArenaCameraParameter& parameters);
+            virtual bool grab(std::vector<uint8_t>& image);
 
-virtual bool grab(std::vector<uint8_t>& image);
+            virtual bool grab(uint8_t* image);
 
-virtual bool grab(uint8_t* image);
+            virtual bool setShutterMode(const arena_camera::SHUTTER_MODE& mode);
 
-virtual bool setShutterMode(const arena_camera::SHUTTER_MODE& mode);
+            virtual bool setROI(const sensor_msgs::RegionOfInterest target_roi,
+                                sensor_msgs::RegionOfInterest& reached_roi);
 
-virtual bool setROI(const sensor_msgs::RegionOfInterest target_roi,
-                    sensor_msgs::RegionOfInterest& reached_roi);
+            virtual bool setBinningX(const size_t& target_binning_x,
+                                        size_t& reached_binning_x);
 
-virtual bool setBinningX(const size_t& target_binning_x,
-                         size_t& reached_binning_x);
+            virtual bool setBinningY(const size_t& target_binning_y,
+                                        size_t& reached_binning_y);
 
-virtual bool setBinningY(const size_t& target_binning_y,
-                         size_t& reached_binning_y);
+            virtual bool setImageEncoding(const std::string& target_ros_encoding);
 
-virtual bool setImageEncoding(const std::string& target_ros_encoding);
+            virtual bool setExposure(const float& target_exposure, float& reached_exposure);
 
-virtual bool setExposure(const float& target_exposure, float& reached_exposure);
+            virtual bool setAutoflash(const std::map<int, bool> flash_on_lines);
 
-virtual bool setAutoflash(const std::map<int, bool> flash_on_lines);
+            virtual bool setGain(const float& target_gain, float& reached_gain);
 
-virtual bool setGain(const float& target_gain, float& reached_gain);
+            virtual bool setGamma(const float& target_gamma, float& reached_gamma);
 
-virtual bool setGamma(const float& target_gamma, float& reached_gamma);
+            virtual bool setBrightness(const int& target_brightness,
+                                        const float& current_brightness,
+                                        const bool& exposure_auto, const bool& gain_auto);
 
-virtual bool setBrightness(const int& target_brightness,
-                           const float& current_brightness,
-                           const bool& exposure_auto,
-                           const bool& gain_auto);
+            virtual std::vector<int> detectAndCountNumUserOutputs();
 
-virtual std::vector<int> detectAndCountNumUserOutputs();
+            virtual bool setUserOutput(const int& output_id, const bool& value);
 
-virtual bool setUserOutput(const int& output_id, const bool& value);
+            virtual size_t currentOffsetX();
 
-virtual size_t currentOffsetX();
+            virtual size_t currentOffsetY();
 
-virtual size_t currentOffsetY();
+            virtual sensor_msgs::RegionOfInterest currentROI();
 
-virtual sensor_msgs::RegionOfInterest currentROI();
+            virtual size_t currentBinningX();
 
-virtual size_t currentBinningX();
+            virtual size_t currentBinningY();
 
-virtual size_t currentBinningY();
+            virtual std::vector<std::string> detectAvailableImageEncodings();
 
-virtual std::vector<std::string> detectAvailableImageEncodings();
+            virtual std::string currentROSEncoding() const;
 
-virtual std::string currentROSEncoding() const;
+            virtual int imagePixelDepth() const;
 
-virtual int imagePixelDepth() const;
+            virtual float currentExposure();
 
-virtual float currentExposure();
+            virtual float currentAutoExposureTimeLowerLimit();
 
-virtual float currentAutoExposureTimeLowerLimit();
+            virtual float currentAutoExposureTimeUpperLimit();
 
-virtual float currentAutoExposureTimeUpperLimit();
+            virtual float currentGain();
 
-virtual float currentGain();
+            virtual float currentAutoGainLowerLimit();
 
-virtual float currentAutoGainLowerLimit();
+            virtual float currentAutoGainUpperLimit();
 
-virtual float currentAutoGainUpperLimit();
+            virtual float currentGamma();
 
-virtual float currentGamma();
+            virtual float maxPossibleFramerate();
 
-virtual float maxPossibleFramerate();
+            virtual bool isArenaAutoBrightnessFunctionRunning();
 
-virtual bool isArenaAutoBrightnessFunctionRunning();
+            virtual bool isBrightnessSearchRunning();
 
-virtual bool isBrightnessSearchRunning();
+            virtual void disableAllRunningAutoBrightessFunctions();
 
-virtual void disableAllRunningAutoBrightessFunctions();
+            virtual void enableContinuousAutoExposure();
 
-virtual void enableContinuousAutoExposure();
+            virtual void enableContinuousAutoGain();
 
-virtual void enableContinuousAutoGain();
+            virtual std::string typeName() const;
 
-virtual std::string typeName() const;
+            virtual float exposureStep();
 
-virtual float exposureStep();
+        protected:
+            typedef typename CameraTraitT::ExposureAutoEnums ExposureAutoEnums;
+            typedef typename CameraTraitT::GainAutoEnums GainAutoEnums;
+            typedef typename CameraTraitT::PixelFormatEnums PixelFormatEnums;
+            typedef typename CameraTraitT::PixelSizeEnums PixelSizeEnums;
+            typedef typename CameraTraitT::AutoTargetBrightnessType AutoTargetBrightnessType;
+            typedef typename CameraTraitT::GainType GainType;
+            typedef typename CameraTraitT::ShutterModeEnums ShutterModeEnums;
+            typedef typename CameraTraitT::UserOutputSelectorEnums UserOutputSelectorEnums;
 
-protected:
-typedef typename CameraTraitT::ExposureAutoEnums ExposureAutoEnums;
-typedef typename CameraTraitT::GainAutoEnums GainAutoEnums;
-typedef typename CameraTraitT::PixelFormatEnums PixelFormatEnums;
-typedef typename CameraTraitT::PixelSizeEnums PixelSizeEnums;
-typedef typename CameraTraitT::AutoTargetBrightnessType AutoTargetBrightnessType;
-typedef typename CameraTraitT::GainType GainType;
-typedef typename CameraTraitT::ShutterModeEnums ShutterModeEnums;
-typedef typename CameraTraitT::UserOutputSelectorEnums UserOutputSelectorEnums;
+            GenApi::IFloat& gamma();
+            GenApi::IFloat& exposureTime();
+            GenApi::IFloat& autoExposureTimeLowerLimit();
+            GenApi::IFloat& autoExposureTimeUpperLimit();
+            GenApi::IFloat& resultingFrameRate();
+            
+            GainType& gain();
+            GainType& autoGainLowerLimit();
+            GainType& autoGainUpperLimit();
+            
+            AutoTargetBrightnessType& autoTargetBrightness();
 
+            virtual bool setExtendedBrightness(const int& target_brightness,
+                                                const float& current_brightness);
 
-// Each camera has it's own getter for GenApi accessors that are named
-// differently for USB and GigE
-GenApi::IFloat& exposureTime();
-GainType& gain();
-GenApi::IFloat& gamma();
-GenApi::IFloat& autoExposureTimeLowerLimit();
-GenApi::IFloat& autoExposureTimeUpperLimit();
-GainType& autoGainLowerLimit();
-GainType& autoGainUpperLimit();
-GenApi::IFloat& resultingFrameRate();
-AutoTargetBrightnessType& autoTargetBrightness();
-
-virtual bool setExtendedBrightness(const int& target_brightness,
-                                   const float& current_brightness);
-
-//virtual bool grab(Arena::CGrabResultPtr& grab_result);
-
-virtual bool setupSequencer(const std::vector<float>& exposure_times,
-                            std::vector<float>& exposure_times_set);
-};
+            virtual bool setupSequencer(const std::vector<float>& exposure_times,
+                                        std::vector<float>& exposure_times_set);
+    };
 
 }  // namespace arena_camera
-
-// #include <arena_camera/internal/impl/arena_camera_base.hpp>
-// #include <arena_camera/internal/impl/arena_camera_usb.hpp>
-// #include <arena_camera/internal/impl/arena_camera_dart.hpp>
-// #include <arena_camera/internal/impl/arena_camera_gige.hpp>
 
 #endif  // ARENA_CAMERA_INTERNAL_ARENA_CAMERA_H

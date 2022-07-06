@@ -39,60 +39,60 @@
 
 namespace arena_camera
 {
-ArenaCamera::ArenaCamera()
-  : device_user_id_("")
-  , img_rows_(0)
-  , img_cols_(0)
-  , img_size_byte_(0)
-  , grab_timeout_(-1.0)
-  , is_ready_(false)
-  , max_brightness_tolerance_(2.5)
-{
-}
+  ArenaCamera::ArenaCamera()
+    : device_user_id_("")
+    , img_rows_(0)
+    , img_cols_(0)
+    , img_size_byte_(0)
+    , grab_timeout_(-1.0)
+    , is_ready_(false)
+    , max_brightness_tolerance_(2.5)
+  {
+  }
 
-const std::string& ArenaCamera::deviceUserID() const
-{
-  return device_user_id_;
-}
+  const std::string& ArenaCamera::deviceUserID() const
+  {
+    return device_user_id_;
+  }
 
-const size_t& ArenaCamera::imageRows() const
-{
-  return img_rows_;
-}
+  const size_t& ArenaCamera::imageRows() const
+  {
+    return img_rows_;
+  }
 
-const size_t& ArenaCamera::imageCols() const
-{
-  return img_cols_;
-}
+  const size_t& ArenaCamera::imageCols() const
+  {
+    return img_cols_;
+  }
 
-const size_t& ArenaCamera::imageSize() const
-{
-  return img_size_byte_;
-}
+  const size_t& ArenaCamera::imageSize() const
+  {
+    return img_size_byte_;
+  }
 
-const float& ArenaCamera::maxBrightnessTolerance() const
-{
-  return max_brightness_tolerance_;
-}
+  const float& ArenaCamera::maxBrightnessTolerance() const
+  {
+    return max_brightness_tolerance_;
+  }
 
-const bool& ArenaCamera::isReady() const
-{
-  return is_ready_;
-}
+  const bool& ArenaCamera::isReady() const
+  {
+    return is_ready_;
+  }
 
-std::size_t ArenaCamera::numUserOutputs() const
-{
-  return user_output_selector_enums_.size();
-}
+  std::size_t ArenaCamera::numUserOutputs() const
+  {
+    return user_output_selector_enums_.size();
+  }
 
-const std::vector<float>& ArenaCamera::sequencerExposureTimes() const
-{
-  return seq_exp_times_;
-}
+  const std::vector<float>& ArenaCamera::sequencerExposureTimes() const
+  {
+    return seq_exp_times_;
+  }
 
-ArenaCamera::~ArenaCamera()
-{
-  // Releases all Arena resources.
-}
+  ArenaCamera::~ArenaCamera()
+  {
+    // Releases all Arena resources.
+  }
 
 }  // namespace arena_camera
