@@ -73,15 +73,6 @@ shutter_mode: ""
 brightness: 128
 
 # Only relevant, if 'brightness' is set:
-# The brightness_continuous flag controls the auto brightness function.
-# If it is set to false, the specified brightness will be only reached once.
-# Hence, changing light conditions will lead to changing brightness values.
-# If it is set to true, the given brightness will be reached continuously,
-# trying to adapt to changing light conditions. This is only possible for
-# values in the possible auto range of the arena API.
-brightness_continuous: true
-
-# Only relevant, if 'brightness' is set:
 # If the camera should try to reach and/or keep the specified brightness, thus
 # adapting to changing light conditions, at least one of the following flags
 # must be set.

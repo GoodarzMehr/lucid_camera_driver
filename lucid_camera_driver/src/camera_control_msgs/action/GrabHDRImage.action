@@ -29,14 +29,6 @@ bool brightness_given
 # value if the brightness_given flag is set to true.
 float32[] brightness_values
 
-# The brightness_continuous flag controls the auto brightness function.
-# If it is set to false, the given brightness will only be reached once.
-# Hence changing light conditions lead to changing brightness values.
-# If it is set to true, the given brightness will be reached continuously,
-# trying to adapt to changing light conditions.
-bool brightness_continuous
-
-
 # Flag which indicates if the gain is provided and hence should be set before
 # grabbing
 bool gain_given

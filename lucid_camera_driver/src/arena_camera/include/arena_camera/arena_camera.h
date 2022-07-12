@@ -157,7 +157,7 @@ namespace arena_camera
        * Sets the desired image pixel encoding
        * (channel meaning, ordering, size) taken from the list of strings in
        * include/sensor_msgs/image_encodings.h.
-       * @param target_ros_endcoding: string describing the encoding.
+       * @param target_ros_encoding: string describing the encoding.
        * @return true if the desired image encoding could be set.
        */
       virtual bool setImageEncoding(const std::string& target_ros_encoding) = 0;

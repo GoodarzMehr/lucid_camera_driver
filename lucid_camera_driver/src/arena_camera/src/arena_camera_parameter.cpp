@@ -50,7 +50,6 @@ ArenaCameraParameter::ArenaCameraParameter()
   , binning_x_given_(false)
   , binning_y_given_(false)
   , sensor_binning_(true)
-  , downsampling_factor_exp_search_(1)
   ,
   // ##########################
   //  image intensity settings
@@ -63,14 +62,11 @@ ArenaCameraParameter::ArenaCameraParameter()
   , gamma_given_(false)
   , brightness_(70)
   , brightness_given_(false)
-  , brightness_continuous_(false)
   , exposure_auto_(true)
   , gain_auto_(true)
   ,
   // #########################
-  exposure_search_timeout_(5.)
-  , auto_exp_upper_lim_(0.0)
-  , mtu_size_(9000)
+    mtu_size_(9000)
   , inter_pkg_delay_(1000)
   , shutter_mode_(SM_DEFAULT)
   , auto_flash_(false)
@@ -137,7 +133,6 @@ void ArenaCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
       binning_y_ = static_cast<size_t>(binning_y);
     }
   }
-  nh.param<int>("downsampling_factor_exposure_search", downsampling_factor_exp_search_, 20);
   image_encoding_given_ = nh.hasParam("image_encoding");
   if (nh.hasParam("image_encoding"))
   {
@@ -199,11 +194,6 @@ void ArenaCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
                     << "be reached! Will ignore the brightness by only "
                     << "setting gain and exposure . . .");
     brightness_given_ = false;
-  }
-  else if (nh.hasParam("brightness_continuous"))
-  {
-    nh.getParam("brightness_continuous", brightness_continuous_);
-    ROS_DEBUG_STREAM("brightness is continuous");
   }
   
   // ignore exposure_auto ?
@@ -338,9 +328,6 @@ void ArenaCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
   
   // ##########################
 
-  nh.param<double>("exposure_search_timeout", exposure_search_timeout_, 5.);
-  nh.param<double>("auto_exposure_upper_limit", auto_exp_upper_lim_, 10000000.);
-
   if (nh.hasParam("gige/mtu_size"))
   {
     nh.getParam("gige/mtu_size", mtu_size_);
@@ -371,8 +358,8 @@ void ArenaCameraParameter::readFromRosParameterServer(const ros::NodeHandle& nh)
   }
 
   nh.param<bool>("auto_flash", auto_flash_, false);
-  nh.param<bool>("auto_flash_line_2", auto_flash_line_2_, true);
-  nh.param<bool>("auto_flash_line_3", auto_flash_line_3_, true);
+  nh.param<bool>("auto_flash_line_2", auto_flash_line_2_, false);
+  nh.param<bool>("auto_flash_line_3", auto_flash_line_3_, false);
 
   ROS_WARN("Autoflash: %i, line2: %i , line3: %i ", auto_flash_, auto_flash_line_2_, auto_flash_line_3_);
   validateParameterSet(nh);
@@ -428,11 +415,6 @@ void ArenaCameraParameter::validateParameterSet(const ros::NodeHandle& nh)
     brightness_given_ = false;
   }
 
-  if (exposure_search_timeout_ < 5.)
-  {
-    ROS_WARN_STREAM("Low timeout for exposure search detected! Exposure "
-                    << "search may fail.");
-  }
   return;
 }
 

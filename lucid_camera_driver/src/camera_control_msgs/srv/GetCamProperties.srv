@@ -33,6 +33,5 @@ float32 min_gamma
 float32 max_gamma
 float32 current_gamma
 
-bool brightness_continuous
 bool gain_auto
 bool exposure_auto
