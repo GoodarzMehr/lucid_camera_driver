@@ -1,7 +1,7 @@
-# The target exposure time measured in microseconds.
-# If the limits were exceeded, the desired exposure time will be truncated.
+# Sets camera exposure time to the target exposure, given in microseconds. If
+# camera limits are exceeded, exposure time will be set to one of those limits.
 float32 target_exposure
 ---
-# Exact match can not always be reached
+# The reached exposure time may not exactly match the target exposure time.
 float32 reached_exposure
 bool success

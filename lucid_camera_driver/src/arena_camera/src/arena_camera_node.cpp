@@ -77,6 +77,8 @@ namespace arena_camera
                                           &ArenaCameraNode::setGammaCallback, this))
     , set_brightness_srv_(nh_.advertiseService("set_brightness",
                                                 &ArenaCameraNode::setBrightnessCallback, this))
+    , get_properties_srv_(nh_.advertiseService("get_properties",
+                                                &ArenaCameraNode::getPropertiesCallback, this))
     , set_sleeping_srv_(nh_.advertiseService("set_sleeping",
                                               &ArenaCameraNode::setSleepingCallback, this))
     , set_user_output_srvs_()
@@ -2305,6 +2307,177 @@ namespace arena_camera
     }
 
     res.success = true;
+    
+    return true;
+  }
+
+  bool ArenaCameraNode::getPropertiesValue(camera_control_msgs::GetCamProperties::Response& res)
+  {
+    try
+    {
+      auto pNodeMap_ = pDevice_->GetNodeMap();
+      
+      // The Arena interface seems unable to provide the latest values of
+      // exposure time and gain, which may automatically change based on lighting
+      // conditions. Hence we first change the status of auto exposure and auto
+      // gain, then revert them back to their original values, to get the latest
+      // exposure time and gain values. 
+
+      GenApi::CEnumerationPtr pExposureAuto = pNodeMap_->GetNode("ExposureAuto");
+      GenApi::CEnumerationPtr pGainAuto = pNodeMap_->GetNode("GainAuto");
+
+      auto exposure_auto = pExposureAuto->GetIntValue();
+      auto gain_auto = pGainAuto->GetIntValue();
+
+      if (GenApi::IsWritable(pExposureAuto))
+      {
+        pExposureAuto->SetIntValue(2 - exposure_auto);
+        pExposureAuto->SetIntValue(exposure_auto);
+      }
+
+      if (GenApi::IsWritable(pGainAuto))
+      {
+        pGainAuto->SetIntValue(2 - gain_auto);
+        pGainAuto->SetIntValue(gain_auto);
+      }    
+      
+      // Get sleeping status.
+      res.is_sleeping = isSleeping();
+
+      // Get device user ID.
+      GenApi::CStringPtr pUserID = pNodeMap_->GetNode("DeviceUserID");
+      
+      if (GenApi::IsReadable(pUserID))
+      {
+        res.device_user_id = pUserID->GetValue();
+      }
+
+      // Get horizontal binning properties.
+      GenApi::CIntegerPtr pBinningHorizontal = pNodeMap_->GetNode("BinningHorizontal");
+
+      if (GenApi::IsReadable(pBinningHorizontal))
+      {
+        res.min_binning_x = pBinningHorizontal->GetMin();
+        res.max_binning_x = pBinningHorizontal->GetMax();
+        res.current_binning_x = pBinningHorizontal->GetValue();
+      }
+
+      // Get vertical binning properties.
+      GenApi::CIntegerPtr pBinningVertical = pNodeMap_->GetNode("BinningVertical");
+
+      if (GenApi::IsReadable(pBinningVertical))
+      {
+        res.min_binning_y = pBinningVertical->GetMin();
+        res.max_binning_y = pBinningVertical->GetMax();
+        res.current_binning_y = pBinningVertical->GetValue();
+      }
+
+      // Get current and maximum frame rate.
+      GenApi::CFloatPtr pFrameRate = pNodeMap_->GetNode("AcquisitionFrameRate");
+
+      if (GenApi::IsReadable(pFrameRate))
+      {
+        res.max_framerate = pFrameRate->GetMax();
+        res.current_framerate = pFrameRate->GetValue();
+      }
+
+      // Get exposure time properties.
+      GenApi::CFloatPtr pExposureTime = pNodeMap_->GetNode("ExposureTime");
+
+      if (GenApi::IsReadable(pExposureTime))
+      {
+        res.min_exposure = pExposureTime->GetMin();
+        res.max_exposure = pExposureTime->GetMax();
+        res.current_exposure = pExposureTime->GetValue();
+      }
+
+      // Get gain properties.
+      GenApi::CFloatPtr pGain = pNodeMap_->GetNode("Gain");
+
+      if (GenApi::IsReadable(pGain))
+      {
+        res.min_gain_in_cam_units = pGain->GetMin();
+        res.max_gain_in_cam_units = pGain->GetMax();
+        res.current_gain_in_cam_units = pGain->GetValue();
+
+        res.min_gain = 0;
+        res.max_gain = 1;
+        res.current_gain = (pGain->GetValue() - pGain->GetMin()) / (pGain->GetMax() - pGain->GetMin());
+      }
+
+      // Get gamma properties.
+      GenApi::CFloatPtr pGamma = pNodeMap_->GetNode("Gamma");
+
+      if (GenApi::IsReadable(pGamma))
+      {
+        res.min_gamma = pGamma->GetMin();
+        res.max_gamma = pGamma->GetMax();
+        res.current_gamma = pGamma->GetValue();
+      }
+
+      // Get brightness properties.
+      GenApi::CIntegerPtr pBrightness = pNodeMap_->GetNode("TargetBrightness");
+
+      if (GenApi::IsReadable(pBrightness))
+      {
+        res.min_brightness = pBrightness->GetMin();
+        res.max_brightness = pBrightness->GetMax();
+        res.current_brightness = pBrightness->GetValue();
+      }
+
+      res.gain_auto = (gain_auto != 0);
+      res.exposure_auto = (exposure_auto != 0);
+    }
+    catch (const GenICam::GenericException& e)
+    {
+      ROS_ERROR_STREAM("An exception occurred while getting camera properties: "
+                        << e.GetDescription());
+      
+      return false;
+    }
+    
+    return true;
+  }
+
+  bool ArenaCameraNode::getProperties(camera_control_msgs::GetCamProperties::Response& res)
+  {
+    boost::lock_guard<boost::recursive_mutex> lock(grab_mutex_);
+    
+    if (ArenaCameraNode::getPropertiesValue(res))
+    {
+      return true;
+    }
+    else
+    {
+      // Retry until timeout.
+      ros::Rate r(10.0);
+      ros::Time timeout(ros::Time::now() + ros::Duration(5.0));
+      
+      while (ros::ok())
+      {
+        if (ArenaCameraNode::getPropertiesValue(res))
+        {
+          break;
+        }
+        if (ros::Time::now() > timeout)
+        {
+          ROS_ERROR_STREAM("Error in getProperties(): Unable to get camera properties before "
+                            << "timeout.");
+
+          return false;
+        }
+
+        r.sleep();
+      }
+
+      return true;
+    }
+  }
+
+  bool ArenaCameraNode::getPropertiesCallback(camera_control_msgs::GetCamProperties::Request& req,
+                                              camera_control_msgs::GetCamProperties::Response& res)
+  {
+    res.success = getProperties(res);
     
     return true;
   }

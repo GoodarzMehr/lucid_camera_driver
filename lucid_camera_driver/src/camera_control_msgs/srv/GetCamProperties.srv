@@ -1,4 +1,4 @@
-# This service returns the current camera properties as well as the limits
+# Gets the current, minimum, and maximum values of select camera properties.
 ---
 bool success
 
@@ -32,6 +32,10 @@ float32 current_gain
 float32 min_gamma
 float32 max_gamma
 float32 current_gamma
+
+int32 min_brightness
+int32 max_brightness
+int32 current_brightness
 
 bool gain_auto
 bool exposure_auto

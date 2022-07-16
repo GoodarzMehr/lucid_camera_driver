@@ -284,6 +284,24 @@ namespace arena_camera
       bool setGammaCallback(camera_control_msgs::SetGamma::Request& req,
                             camera_control_msgs::SetGamma::Response& res);
 
+      bool getPropertiesValue(camera_control_msgs::GetCamProperties::Response& res);
+
+      /**
+      * Get the current camera properties.
+      * @param res ROS service response.
+      * @return true if camera properties could be obtained.
+      */
+      bool getProperties(camera_control_msgs::GetCamProperties::Response& res);
+
+      /**
+      * Service callback for getting the current camera properties.
+      * @param req request.
+      * @param res response.
+      * @return true on success.
+      */
+      bool getPropertiesCallback(camera_control_msgs::GetCamProperties::Request& req,
+                                  camera_control_msgs::GetCamProperties::Response& res);
+      
       /**
       * Callback that puts the camera to sleep.
       * @param req request.
@@ -352,6 +370,7 @@ namespace arena_camera
       ros::ServiceServer set_gain_srv_;
       ros::ServiceServer set_gamma_srv_;
       ros::ServiceServer set_brightness_srv_;
+      ros::ServiceServer get_properties_srv_;
       ros::ServiceServer set_sleeping_srv_;
       std::vector<ros::ServiceServer> set_user_output_srvs_;
 
