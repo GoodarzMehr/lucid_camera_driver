@@ -229,9 +229,9 @@ namespace arena_camera
       * @param target_brightness is the desired brightness. Range is [1...255].
       * @param current_brightness is the current brightness with the given settings.
       * @param exposure_auto flag which indicates if the target_brightness
-      *                      should be reached by adapting the exposure time
+      *        should be reached by adapting the exposure time
       * @param gain_auto flag which indicates if the target_brightness should be
-      *                      reached by adapting the gain.
+      *        reached by adapting the gain.
       * @return true if the brightness could be reached, false otherwise.
       */
       bool setBrightness(const int& target_brightness, int& reached_brightness,

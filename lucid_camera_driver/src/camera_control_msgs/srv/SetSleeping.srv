@@ -1,7 +1,7 @@
-# If the camera runs in topic mode (continuously publishing images over the
-# topics respecting the desired frame_rate) this service offers the posibillity
-# to pause the image acquisition. To restart the grabbing, this service should
-# be called again with set_sleeping set to false
+# Puts the camera to sleep. If a camera is active (continuously publishing
+# image frames at the desired frame rate), this service offers the possibility
+# to pause image acquisition. This service should be called again with
+# set_sleeping set to false to restart image acquisition.
 bool set_sleeping
 ---
 bool success

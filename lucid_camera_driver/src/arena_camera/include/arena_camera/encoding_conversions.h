@@ -34,25 +34,26 @@
 
 namespace arena_camera
 {
+    namespace encoding_conversions
+    {
+        /**
+         * Converts a ROS image pixel encoding (found in
+         * sensor_msgs/image_encodings.h) into the corresponding GenAPI
+         * encoding.
+         * @return true if a corresponding GenAPI encoding could be found,
+         *         false otherwise.
+         */
+        bool ros2GenAPI(const std::string& ros_enc, std::string& gen_api_enc);
 
-namespace encoding_conversions
-{
-    /**
-     * Converts an encoding from the sensor_msgs/image_encodings.h list into
-     * the GenAPI language.
-     * @return true in case that an corresponding conversion could be found and
-     *         false otherwise.
-     */
-    bool ros2GenAPI(const std::string& ros_enc, std::string& gen_api_enc);
+        /**
+         * Converts a GenAPI image pixel encoding into the corresponding ROS
+         * encoding (found in sensor_msgs/image_encodings.h).
+         * @return true if a corresponding ROS encoding could be found, false
+         *         otherwise.
+         */
+        bool genAPI2Ros(const std::string& gen_api_enc, std::string& ros_enc);
 
-    /**
-     * Converts an encoding described in GenAPI language into the ROS encoding
-     * language. The ROS encodings are listed in sensor_msgs/image_encodings.h
-     * @return true in case that an corresponding conversion could be found and
-     *         false otherwise.
-     */
-    bool genAPI2Ros(const std::string& gen_api_enc, std::string& ros_enc);
+    } // namespace encoding_conversions
+} // namespace arena_camera
 
-}  // namespace encoding_conversions
-}  // namespace arena_camera
-#endif  // ARENA_CAMERA_ENCODING_CONVERSIONS_H
+#endif // ARENA_CAMERA_ENCODING_CONVERSIONS_H

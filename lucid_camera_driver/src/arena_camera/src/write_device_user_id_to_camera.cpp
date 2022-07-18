@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /*
-This program will open a Lucid Arena Camera and write a desired camera id.
+This node opens a Lucid camera and writes a desired camera ID to it.
 */
 
 // STD
@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
   {
     std::cerr << "ERROR: No device_user_id set!" << std::endl;
     std::cout << "USAGE: write_device_user_id_to_camera DEVICE_USER_ID" << std::endl;
+    
     return 1;
   }
 
@@ -52,43 +53,47 @@ int main(int argc, char* argv[])
 
   if (desired_device_user_id.empty())
   {
-    std::cout << "ERROR:" << std::endl;
-    std::cout << "Your desired device_user_id is empty!" << std::endl;
+    std::cout << "ERROR: Your desired device_user_id is empty!" << std::endl;
+    
     return 2;
   }
+  
   try
   {
     // Create an instant camera object with the camera device found first.
     Arena::ISystem* pSystem = Arena::OpenSystem();
+    
     pSystem->UpdateDevices(100);
 
     std::vector<Arena::DeviceInfo> deviceInfos = pSystem->GetDevices();
+    
     if (deviceInfos.size() == 0)
-
     {
-      std::cout << "ERROR:" << std::endl;
-      std::cout << "No camera connected, unable to write to camera" << std::endl;
+      std::cout << "ERROR: No camera connected, unable to write camera ID." << std::endl;
+      
       Arena::CloseSystem(pSystem);
+      
       return 2;
     }
 
     Arena::IDevice* pDevice = pSystem->CreateDevice(deviceInfos[0]);
-
     GenApi::INodeMap* pNodeMap = pDevice->GetNodeMap();
     GenApi::CStringPtr current_device_user_id = pNodeMap->GetNode("DeviceUserID");
+    
     current_device_user_id->SetValue(GenICam::gcstring(desired_device_user_id.c_str()));
 
-    std::cout << "Successfully wrote new device user id: " << current_device_user_id->GetValue() << " to the camera "
-              << deviceInfos[0].ModelName() << std::endl;
+    std::cout << "Successfully wrote new device user ID (" << current_device_user_id->GetValue()
+              << ") to camera " << deviceInfos[0].ModelName() << std::endl;
 
     pSystem->DestroyDevice(pDevice);
+    
     Arena::CloseSystem(pSystem);
   }
-
   catch (GenICam::GenericException& e)
   {
-    // Error handling.
-    std::cerr << "An exception occurred." << std::endl << e.GetDescription() << std::endl;
+    std::cerr << "An exception occurred while setting device user ID: " << e.GetDescription()
+              << std::endl;
+    
     return 3;
   }
 
