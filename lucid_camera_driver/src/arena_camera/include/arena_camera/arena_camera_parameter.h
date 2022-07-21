@@ -157,7 +157,7 @@ namespace arena_camera
       bool exposure_given_;
 
       /**
-       * The target gain as percent of the maximum value that the camera
+       * The target gain as a percent of the maximum value that the camera
        * supports. For USB cameras, the gain is in dB, for GigE cameras it is
        * given in so-called 'device specific units'.
        */
@@ -209,7 +209,7 @@ namespace arena_camera
        * the profile that tries to keep the gain at a minimum to reduce white
        * noise. The exposure_auto_ flag indicates that the desired brightness
        * may be reached by changing the exposure time. The gain_auto_ flag
-       * indicates that the desired brightness may be reached by adapting the
+       * indicates that the desired brightness may be reached by changing the
        * gain.
        */
       bool exposure_auto_;

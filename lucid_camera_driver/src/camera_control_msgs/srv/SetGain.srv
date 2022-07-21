@@ -1,8 +1,8 @@
-# The target gain in percent of the maximal value the camera supports.
-# For USB-Cameras, the gain is in dB, for GigE-Cameras it is given in so
-# called 'device specific units'.
+# Sets the target gain as a percent of the maximum gain value the camera
+# supports For USB cameras, the gain is given in dB. For GigE cameras it is
+# given in so-called 'device specific units'.
 float32 target_gain
 ---
-# Exact match can not always be reached
+# The reached gain main not exactly match the desired gain.
 float32 reached_gain
 bool success

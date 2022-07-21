@@ -1526,10 +1526,10 @@ namespace arena_camera
     cam_info_msg.P.assign(0.0);
 
     // Binning refers to any camera setting which combines rectangular
-    // neighborhoods of pixels into larger "super-pixels." It reduces the
+    // neighborhoods of pixels into larger 'super-pixels'. It reduces the
     // resolution of the output image to
     // (width / binning_x) x (height / binning_y).
-    // The default values binning_x = binning_y = 0 is considered the
+    // The default values binning_x = binning_y = 0 are considered the
     // same as binning_x = binning_y = 1 (no subsampling).
     cam_info_msg.binning_x = 0; // currentBinningX();
     cam_info_msg.binning_y = 0; // currentBinningY();

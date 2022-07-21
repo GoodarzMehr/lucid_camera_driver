@@ -1,91 +1,82 @@
-##########################################
-################## GOAL ##################
-##########################################
+#################################### GOAL #####################################
 
-# Flag which indicates if the exposure times are provided and hence should be
-# set before grabbing
+# Flag which indicates if exposure time is provided and should be set before
+# grabbing image.
 bool exposure_given
 
-# The list of target exposure time in microseconds.
-# It is possible to grab only one image as well as several images with
-# different exposure times. This values can be overriden from the brightness
-# search, in case that the flag exposure_fixed is not true.
-# The interface will only try to set these values if the exposure_given flag is
-# set to true.
+# Only relevant if 'exposure_given' is set to true.
+# The list of target exposure times in microseconds. It is possible to grab
+# only one image or several images with different exposure times. These values
+# can be overridden by the brightness search if the 'exposure_fixed' flag is
+# not set to true.
 float32[] exposure_times
 
-# If the exposure_fixed flag is set, the exposure time will stay fix in
-# case of a brightness search. Hence the target brightness will be reached
-# only by varying the gain
+# If this flag is set to true, exposure times will stay fixed during a
+# brightness search. Hence the target brightness will be reached by only
+# changing the gain.
 bool exposure_fixed
 
-
-# Flag which indicates if the brightness values are provided and hence should
-# be set before grabbing
-bool brightness_given
-
-# The average intensity values of the images. It depends the exposure time
-# as well as the gain setting. The interface will only try to reach this
-# value if the brightness_given flag is set to true.
-float32[] brightness_values
-
-# Flag which indicates if the gain is provided and hence should be set before
-# grabbing
+# Flag which indicates if gain is provided and hence should be set before
+# grabbing image.
 bool gain_given
 
-# The target gain values in percent of the maximal value the camera supports
-# For USB-Cameras, the gain is in dB, for GigE-Cameras it is given in so
-# called 'device specific units'. This value can be overriden from the
-# brightness search, in case that the gain_fixed flag is set to false.
-# The interface will only try to reach this values if the gain_given flag is
-# set to true.
+# Only relevant if 'gain_given' is set to true.
+# The list of target gains as a percent of the maximum value that the camera
+# supports. For USB cameras the gain is given in dB, for GigE cameras it is
+# given in so-called 'device specific units'. These values can be overridden by
+# the brightness search if the 'gain_fixed' flag is not set to true.
 float32[] gain_values
 
-# If the gain_fixed flag is set, the gain value will stay fix in
-# case of a brightness search. Hence the target brightness will be reached
-# only by varying the exposure
+# If this flag is set to true, gain will stay fixed during a brightness search.
+# Hence the target brightness will be reached by only changing the exposure
+# times.
 bool gain_fixed
 
-# Flag which indicates if the gamma value is provided and hence should be set
-# before grabbing
+# Flag which indicates if gamma correction is provided and hence should be set
+# before grabbing image.
 bool gamma_given
 
-# Gamma correction of pixel intensity.
-# Adjusts the brightness of the pixel values output by the camera's sensor
-# to account for a non-linearity in the human perception of brightness or
-# of the display system (such as CRT).
-# The interface will only try to reach this value if the gamma_given flag is
-# set to true.
+# Only relevant if 'gamma_given' is set to true.
+# The list of gamma correction of pixel intensity values. They adjust the
+# brightness of the pixel values output by the camera's sensor to account for a
+# non-linearity in the human perception of brightness or of the display system
+# (such as CRT).
 float32[] gamma_values
 
----
-##########################################
-################# RESULT #################
-##########################################
+# Flag which indicates if brightness is provided and hence should be set before
+# grabbing image.
+bool brightness_given
 
-# The resulting HDR image generated out of several images with the inquired
+# Only relevant if 'brightness_given' is set to true.
+# The list of average intensity values of the images. Brightness depends on both
+# the exposure time and gain.
+float32[] brightness_values
+---
+################################### RESULT ####################################
+
+# The resulting HDR image generated out of several images with the desired
 # image intensity settings.
 sensor_msgs/Image hdr_image
 
-# The CameraInfo obejct describing the camera properties for the above image
-# sequence. Static in many cases, but can also support variable binning setting
+# The CameraInfo object that describes the camera properties for the image
+# sequence above. It is static in many cases, but can also be variable to
+# accomodate binning settings.
 sensor_msgs/CameraInfo cam_info
 
-# The reached values of the images e.g. the values that were set to the camera
-# before the grab
+# The reached values of exposure time, gain, gamma, and brightness for each
+# image.
 float32[] reached_exposure_times
-
-float32[] reached_brightness_values
 
 float32[] reached_gain_values
 
 float32[] reached_gamma_values
 
-# Flag which indicates the success of the grabbing action
-bool success
+float32[] reached_brightness_values
 
+# Flag which indicates whether image grabbing was successful.
+bool success
 ---
-##########################################
-################ FEEDBACK ################
-##########################################
+################################## FEEDBACK ###################################
+
+# The number of images already taken.
 int32 curr_nr_images_taken

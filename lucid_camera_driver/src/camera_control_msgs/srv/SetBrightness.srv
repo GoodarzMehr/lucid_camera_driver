@@ -1,21 +1,16 @@
-# The target brightness, which is average intensity values of the images.
-# It depends the exposure time as well as the gain setting.
+# Sets the target brightness, which is the average of pixel intensity values
+# in an image. It depends on both the exposure time and gain.
 int32 target_brightness
 
-# If the camera should try reach or keep the desired brightness, hence adapting
-# to changing light conditions, at least one of the following flags MUST be set.
-# If both are set, the interface will use the profile that tries to keep the
-# gain at minimum to reduce white noise.
-# 'exposure_auto' will adapt the exposure time to reach the brightness, wheras
-# 'gain_auto' does so by adapting the gain.
+# For the camera to reach and keep the desired brightness level (adapting to
+# changing light conditions), at least one of the following flags must be set
+# to true. If both are set to true the interface will use a profile that tries
+# to keep the gain at a minimum to reduce white noise.
 bool exposure_auto
 bool gain_auto
-
 ---
-
-# Exact match can not always be reached
+# The reached brightness may not always match the desired brightness.
 int32 reached_brightness
 float32 reached_exposure_time
 float32 reached_gain_value
-
 bool success

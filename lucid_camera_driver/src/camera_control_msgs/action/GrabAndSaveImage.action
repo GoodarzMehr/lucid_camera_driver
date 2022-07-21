@@ -1,77 +1,67 @@
-# The 'GrabAndSaveImageAction' has a similar goal as the 'GrabImagesAction' in
-# case of only grabbing one image. It additionally contains a string describing
-# the full storage path of the image to be captured.
-# It wont provide the grabbed image via the result topic. Instead it only
-# returns a flag indicating the success.
+# The 'GrabAndSaveImageAction' has a similar goal as the 'GrabImagesAction'
+# when grabbing only one image. It also contains a string describing the full
+# storage path of the image to be captured. It will not provide the grabbed
+# image via the result topic, only returning a flag indicating image grabbing
+# was successful.
 
-##########################################
-################## GOAL ##################
-##########################################
+#################################### GOAL #####################################
 
-# Flag which indicates if the exposure time is provided and hence should be
-# set before grabbing
+# Flag which indicates if exposure time is provided and should be set before
+# grabbing image.
 bool exposure_given
 
-# Only relevant, if exposure_given is true:
-# The target exposure time in microseconds. This values can be overriden from
-# the brightness search, in case that the flag exposure_fixed is not true.
+# Only relevant if 'exposure_given' is set to true.
+# The target exposure time in microseconds.
 float32 exposure_time
 
-# Flag which indicates if the gain is provided and hence should be set before
-# grabbing
+# Flag which indicates if gain is provided and hence should be set before
+# grabbing image.
 bool gain_given
 
-# Only relevant, if gain_given is true:
-# The target gain in percent of the maximal value the camera supports.
-# For USB-Cameras, the gain is in dB, for GigE-Cameras it is given in so
-# called 'device specific units'. This value can be overriden from the
-# brightness search, in case that the gain_fixed flag is set to false.
+# Only relevant if 'gain_given' is set to true.
+# The target gain as a percent of the maximum value that the camera supports.
+# For USB cameras the gain is given in dB, for GigE cameras it is given in
+# so-called 'device specific units'.
 float32 gain_value
 
-# Flag which indicates if the gamma value is provided and hence should be set
-# before grabbing
+# Flag which indicates if gamma correction is provided and hence should be set
+# before grabbing image.
 bool gamma_given
 
-# Only relevant, if gain_given is true:
-# Gamma correction of pixel intensity.
-# Adjusts the brightness of the pixel values output by the camera's sensor
-# to account for a non-linearity in the human perception of brightness or
-# of the display system (such as CRT).
+# Only relevant if 'gamma_given' is set to true.
+# The gamma correction of pixel intensity values. It adjusts the brightness of
+# the pixel values output by the camera's sensor to account for a non-linearity
+# in the human perception of brightness or of the display system (such as CRT).
 float32 gamma_value
 
-# Flag which indicates if the brightness value is provided and hence should
-# be set before grabbing
+# Flag which indicates if brightness is provided and hence should be set before
+# grabbing image.
 bool brightness_given
 
-# Only relevant, if brightness_given is true:
-# The average intensity value of the resulting image. It depends the exposure
-# time as well as the gain setting.
+# Only relevant if 'brightness_given' is set to true.
+# The average intensity value of the resulting image. Brightness depends on
+# both the exposure time and gain.
 float32 brightness_value
 
-# Only relevant, if brightness_given is true:
-# If the camera should try reach the desired brightness, at least one of the
-# following flags MUST be set. If both are set, the interface will use the
-# profile that tries to keep the gain at minimum to reduce white noise.
-# 'exposure_auto' will adapt the exposure time to reach the brightness, wheras
-# 'gain_auto' does so by adapting the gain. If one of these flags is set to
-# false, the connected property will be kept fix.
-# In most of the cases trying to reach a target brightness only by varying the
-# gain and keeping the exposure time fix is not a good approach, because the
-# exposure range is many times higher than the gain range.
+# Only relevant if 'brightness_given' is set to true.
+# If the camera should try to reach and/or maintain the desired brightness,
+# adapting to the changing light conditions, at least one of the following
+# flags must be set. If both are set, the interface will use the profile that
+# tries to keep the gain at a minimum to reduce white noise. The
+# 'exposure_auto' flag indicates that the desired brightness may be reached by
+# changing the exposure time, whereas the 'gain_auto' flag indicates that the
+# desired brightness may be reached by changing the gain. If one of these flags
+# is set to false, the connected property will be kept fixed.
 bool exposure_auto
 bool gain_auto
 
-# File path and image name (including file-extension) to store the grabbed
-# image
+# File path and image name (including file extension) to store the grabbed
+# image.
 string img_storage_path_and_name
 ---
+################################### RESULT ####################################
 
-##########################################
-################# RESULT #################
-##########################################
-
-# Flag which indicates the success of ithe grabbing and storage action.
+# Flag which indicates whether image grabbing was successful.
 bool success
 ---
-
-# No Feedback
+################################## FEEDBACK ###################################

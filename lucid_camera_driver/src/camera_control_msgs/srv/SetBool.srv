@@ -1,6 +1,10 @@
-# Borrowed from std_srvs/SetBool until they release the package
+# Enables or disables a desired property. Borrowed from std_srvs/SetBool until
+# they release the package.
 
-bool data # e.g. for hardware enabling / disabling
+bool data
 ---
-bool success   # indicate successful run of triggered service
-string message # informational, e.g. for error messages
+# Indicates whether the request was successful.
+bool success
+
+# Passes along the desired information, e.g. error messages.
+string message
