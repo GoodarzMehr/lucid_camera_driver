@@ -67,8 +67,8 @@
 		//
 		// ROS
 		//
-		"ros.distro": "melodic",
-		//"ros.distro": "noetic",
+		//"ros.distro": "melodic",
+		"ros.distro": "noetic",
 		"cSpell.words": [
 			"DCMAKE",
 			"rosparam"

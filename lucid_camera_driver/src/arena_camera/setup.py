@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 # NEEDED IF "catkin_python_setup" IS USED IN CMakeLists.txt
 
 from distutils.core import setup

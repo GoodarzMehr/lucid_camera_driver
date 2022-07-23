@@ -4,17 +4,15 @@
 # MAIN VARS TO CHANGE
 #
 ARENA_INSTALLATION_ROOT="$HOME/software/OutputDirectory/Linux"
-ARENA_ROS_WORDSPACE_TO_SETUP="$HOME/carma_ws/src/lucid_camera_driver/lucid_camera_driver" #change to workspace location
+ARENA_ROS_WORKSPACE_TO_SETUP="$HOME/carma_ws/src/lucid_camera_driver/lucid_camera_driver" #change to workspace location
 INSTALL_ROS=1
-
 
 ############################################################
 # Note:
 #    ArenaSDK does not need to be installed as long as 
-#    $ARENA_INSTALLATION_ROOT point to ArenaSDK binaries
+#    $ARENA_INSTALLATION_ROOT points to ArenaSDK binaries
 #
 ############################################################
-
 
 set -x #echo on
 
@@ -34,9 +32,9 @@ elif [ $CURR_OS = "bionic" ]; then
     ROS_DIS="melodic"
 
 elif [ $CURR_OS = "focal" ]; then
-    ROS1_DIS="noetic"
+    ROS_DIS="noetic"
 else
-    echo "$CURR_OS is might not be supported yet! check https://support.thinklucid.com/using-ros-for-linux/"
+    echo "$CURR_OS might not be supported yet! check https://support.thinklucid.com/using-ros-for-linux/"
     exit -1
 fi
 
@@ -48,9 +46,11 @@ if [ $INSTALL_ROS -eq 1 ]; then
 
     # Set up your system to acquire software from packages.ros.org
     sudo echo "deb http://packages.ros.org/ros/ubuntu $CURR_OS main" > /etc/apt/sources.list.d/ros-latest.list
-    # Use apt-key to install the Open Robotics key to your list of trusted keys.
-    # to remove the key at uninstaltion time run `sudo apt-key del F42ED6FBAB17C654`
+    
+    # Use apt-key to install the Open Robotics key in your list of trusted keys.
+    # To remove the key at uninstallation time run `sudo apt-key del`
     sudo apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+    
     # Install ROS Desktop.
     sudo apt-get update
     sudo apt-get install ros-$ROS_DIS-desktop-full
@@ -62,54 +62,53 @@ if [ $INSTALL_ROS -eq 1 ]; then
     sudo rosdep fix-permissions
     rosdep update
 
-    # Setups ROS environment variables
-    #echo "# load ROS env vars" >> ~/.bashrc
-    #echo "source /opt/ros/$ROS_DIS/setup.bash" >> ~/.bashrc
+    # Setups ROS environment variables.
+    # echo "# load ROS env vars" >> ~/.bashrc
+    # echo "source /opt/ros/$ROS_DIS/setup.bash" >> ~/.bashrc
 
-    #echo "# load ROS env vars" >> ~/.zshrc
-    #echo "source /opt/ros/$ROS_DIS/setup.zsh" >> ~/.zshrc
+    # echo "# load ROS env vars" >> ~/.zshrc
+    # echo "source /opt/ros/$ROS_DIS/setup.zsh" >> ~/.zshrc
 
-    # would not have an effect if script is not run in intractive mode
-    #source ~/.bashrc 
+    # Would not have an effect if script is not run in intractive mode.
+    # source ~/.bashrc 
 
-    #
     # Install ROS package workspace dependencies. This will allow 
     # you to create and manage your own ROS workspaces, including 
-    # the ROS workspace usedby arena_camera.
-    #
+    # the ROS workspace used by arena_camera.
     sudo apt-get install python-rosinstall \
-                        python-rosinstall-generator \
-                        python-wstool \
-                        build-essential
+                            python-rosinstall-generator \
+                            python-wstool \
+                            build-essential
 
 fi
+
 ############################################################
 # Arena SDK section
 ############################################################
 
-# dont not need to be installed as long as 
-# $ARENA_INSTALLATION_ROOT points to ArenaSDK binaries
-
+# Does not need to be installed as long as 
+# $ARENA_INSTALLATION_ROOT points to ArenaSDK binaries.
 
 # Set up your ARENA_ROOT environment variable. This
 # environment variable should be the path where you have
 # installed Arena SDK.
-#echo "export ARENA_ROOT=$ARENA_INSTALLATION_ROOT">> ~/.bashrc
-#echo "export ARENA_ROOT=$ARENA_INSTALLATION_ROOT">> ~/.zshrc
-# would not have an effect if script is not run in intractive mode
-#source ~/.bashrc
+# echo "export ARENA_ROOT=$ARENA_INSTALLATION_ROOT">> ~/.bashrc
+# echo "export ARENA_ROOT=$ARENA_INSTALLATION_ROOT">> ~/.zshrc
+
+# Would not have an effect if script is not run in intractive mode.
+# source ~/.bashrc
 
 ############################################################
 # Workspace section
 ############################################################
 
-# Copy the included image_encoding.h to your ROS include folder after 
-# baking the old one up (if existed).
-# A custom image_encoding.h is included to enable streaming
+# Copy the included image_encodings.h to your ROS include folder after 
+# backing the old one up (if existed).
+# A custom image_encodings.h is included to enable streaming
 # support for LUCID’s Helios camera.
 sudo cp -f \
     /opt/ros/$ROS_DIS/include/sensor_msgs/image_encodings.h \
     /opt/ros/$ROS_DIS/include/sensor_msgs/image_encodings.h.bak
 sudo cp -f \
-    $ARENA_ROS_WORDSPACE_TO_SETUP/inc/image_encodings.h \
+    $ARENA_ROS_WORKSPACE_TO_SETUP/inc/image_encodings.h \
     /opt/ros/$ROS_DIS/include/sensor_msgs/image_encodings.h
