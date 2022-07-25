@@ -1,9 +1,10 @@
 #! /usr/bin/env python
 
 import rospy
-import camera_control_msgs.msg
 import actionlib
+
 import sensor_msgs.msg
+import camera_control_msgs.msg
 
 __author__ = 'klank'
 
@@ -11,32 +12,30 @@ __author__ = 'klank'
 class ImageReplicator(object):
     def __init__(self, action_name):
         self._action_name = action_name
-        rospy.loginfo("open action server: " + str(action_name))
+        
+        rospy.loginfo("open action server: " + str(action_name) + ".")
 
-        self._as = actionlib.SimpleActionServer(
-            self._action_name,
-            camera_control_msgs.msg.GrabImagesAction,
-            self.execute_cb,
-            False)
+        self._as = actionlib.SimpleActionServer(self._action_name,
+                                                camera_control_msgs.msg.GrabImagesAction,
+                                                self.execute_cb, False)
 
-        rospy.loginfo("subscribe to : /bag" + str(action_name) + "/result")
+        rospy.loginfo("Subscribe to: /bag" + str(action_name) + "/result")
 
-        self._sub = rospy.Subscriber(
-            "/bag"+str(action_name)+"/result",
-            camera_control_msgs.msg.GrabImagesActionResult,
-            self.image_callback,
-            queue_size=5)
+        self._sub = rospy.Subscriber("/bag" + str(action_name) + "/result",
+                                     camera_control_msgs.msg.GrabImagesActionResult,
+                                     self.image_callback, queue_size = 5)
 
-        rospy.loginfo("subscribe to : /bag/sol_camera/camera_info")
+        rospy.loginfo("Subscribe to: /bag/sol_camera/camera_info")
 
         self._sub = rospy.Subscriber("/bag/sol_camera/camera_info",
                                      sensor_msgs.msg.CameraInfo,
-                                     self.cam_info_callback, queue_size=5)
-        rospy.loginfo("publish: /bag/sol_camera/camera_info")
+                                     self.cam_info_callback, queue_size = 5)
+        
+        rospy.loginfo("Publish to: /bag/sol_camera/camera_info")
 
         self._pub = rospy.Publisher("/sol_camera/camera_info",
                                     sensor_msgs.msg.CameraInfo,
-                                    queue_size=5, latch=True)
+                                    queue_size = 5, latch = True)
 
         self.image_list = []
 
@@ -64,7 +63,9 @@ class ImageReplicator(object):
 
 def main():
     rospy.init_node("result_bag_to_action")
+    
     ImageReplicator("/sol_camera/grab_images_raw")
+    
     rospy.spin()
 
 if __name__ == '__main__':
