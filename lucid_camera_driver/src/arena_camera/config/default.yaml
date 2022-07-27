@@ -70,7 +70,7 @@ shutter_mode: ""
 # to reach the desired brightness by only varying the exposure time. If 'gain'
 # and 'exposure' are both given, it is not possible to reach the brightness,
 # because both are assumed to be fixed.
-brightness: 128
+brightness: 70
 
 # Only relevant, if 'brightness' is set:
 # If the camera should try to reach and/or keep the specified brightness, thus

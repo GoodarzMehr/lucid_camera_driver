@@ -1,48 +1,46 @@
-# ARG ROS_DISTRO=noetic
+ARG ROS_DISTRO=noetic
 
-# FROM ros:${ROS_DISTRO}-ros-core AS build-env
-# ENV DEBIAN_FRONTEND=noninteractive \
-#     BUILD_HOME=/var/lib/build \
-#     LCD_SDK_PATH=/opt/lucid_camera_driver \
-#     ARENA_ROOT=${LCD_SDK_PATH}}/ArenaSDK_Linux_x64 \
-#     ARENA_CONFIG_ROOT=${LCD_SDK_PATH}/lucid_camera_driver
+FROM ros:${ROS_DISTRO}-ros-core AS build-env
+ENV DEBIAN_FRONTEND=noninteractive \
+    BUILD_HOME=/var/lib/build \
+    LCD_SDK_PATH=/opt/lucid_camera_driver \
+    ARENA_ROOT=${LCD_SDK_PATH}}/ArenaSDK_Linux_x64 \
+    ARENA_CONFIG_ROOT=${LCD_SDK_PATH}/lucid_camera_driver
 
-# RUN set -xue \
-# # Kinetic and melodic have python3 packages but they seem to conflict
-# && [ $ROS_DISTRO = "noetic" ] && PY=python3 || PY=python \
-# # Turn off installing extra packages globally to slim down rosdep install
-# && echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/01norecommend \
-# && apt-get update \
-# && apt-get install -y \
-#  build-essential cmake \
-#  fakeroot dpkg-dev debhelper git \
-#  $PY-rosdep $PY-rospkg $PY-bloom
+RUN set -xue \
+# Kinetic and melodic have python3 packages but they seem to conflict
+&& [ $ROS_DISTRO = "noetic" ] && PY=python3 || PY=python \
+# Turn off installing extra packages globally to slim down rosdep install
+&& echo 'APT::Install-Recommends "0";' > /etc/apt/apt.conf.d/01norecommend \
+&& apt-get update \
+&& apt-get install -y \
+ build-essential cmake \
+ fakeroot dpkg-dev debhelper git \
+ $PY-rosdep $PY-rospkg $PY-bloom
 
-# # Set up non-root build user
-# ARG BUILD_UID=1000
-# ARG BUILD_GID=${BUILD_UID}
+# Set up non-root build user
+ARG BUILD_UID=1000
+ARG BUILD_GID=${BUILD_UID}
 
-# RUN set -xe \
-# && groupadd -o -g ${BUILD_GID} build \
-# && useradd -o -u ${BUILD_UID} -d ${BUILD_HOME} -rm -s /bin/bash -g build build
+RUN set -xe \
+&& groupadd -o -g ${BUILD_GID} build \
+&& useradd -o -u ${BUILD_UID} -d ${BUILD_HOME} -rm -s /bin/bash -g build build
 
-# # Install build dependencies using rosdep
-# COPY --chown=build:build cav_msgs/package.xml ${LCD_SDK_PATH}/cav_msgs/package.xml
-# COPY --chown=build:build dummy/package.xml ${LCD_SDK_PATH}/lucid_camera_driver/src/arena_camera/package.xml
-# COPY --chown=build:build lucid_camera_driver/src/camera_control_msgs/package.xml ${LCD_SDK_PATH}/lucid_camera_driver/src/camera_control_msgs/package.xml
+# Install build dependencies using rosdep
+COPY --chown=build:build cav_msgs/package.xml ${LCD_SDK_PATH}/cav_msgs/package.xml
+COPY --chown=build:build dummy/package.xml ${LCD_SDK_PATH}/lucid_camera_driver/src/arena_camera/package.xml
+COPY --chown=build:build lucid_camera_driver/src/camera_control_msgs/package.xml ${LCD_SDK_PATH}/lucid_camera_driver/src/camera_control_msgs/package.xml
 
-# RUN set -xe \
-# && apt-get update \
-# && rosdep init \
-# && rosdep update --rosdistro=${ROS_DISTRO} \
-# && rosdep install -y --from-paths ${LCD_SDK_PATH}
+RUN set -xe \
+&& apt-get update \
+&& rosdep init \
+&& rosdep update --rosdistro=${ROS_DISTRO} \
+&& rosdep install -y --from-paths ${LCD_SDK_PATH}
 
-# RUN sudo git clone --depth 1 https://github.com/vishnubob/wait-for-it.git ~/.base-image/wait-for-it &&\
-#     sudo mv ~/.base-image/wait-for-it/wait-for-it.sh /usr/bin
+RUN sudo git clone --depth 1 https://github.com/vishnubob/wait-for-it.git ~/.base-image/wait-for-it &&\
+    sudo mv ~/.base-image/wait-for-it/wait-for-it.sh /usr/bin
 
-# RUN rm ${LCD_SDK_PATH}/lucid_camera_driver/src/arena_camera/package.xml
-
-FROM usdotfhwastol/carma-lucid-camera-driver:base AS build-env
+RUN rm ${LCD_SDK_PATH}/lucid_camera_driver/src/arena_camera/package.xml
 
 # Set up build environment
 COPY --chown=build:build lucid_camera_driver ${LCD_SDK_PATH}/lucid_camera_driver

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="respawn" default="false" />
+    <arg name="debug" default="false" />
+    <arg name="node_name" default="lucid_camera_node" />
+    <arg name="config_file" default="$(find arena_camera)/config/default.yaml" />
+    
+    <arg name="brightness" default="70" />
+    <arg name="frame_rate" default="10.0" />
+    <arg name="image_encoding" default="bayer_rggb24" />
+    <arg name="sensor_binning" default="true" />
+    <arg name="binning_x" default="2" />
+    <arg name="binning_y" default="2" />
+
+    <arg unless="$(arg debug)" name="launch_prefix" value="" />
+    <arg     if="$(arg debug)" name="launch_prefix" value="gdb -ex run --args" />
+
+    <!-- Camera 1 -->
+    <node name="$(arg node_name)_1" pkg="arena_camera" type="arena_camera_node" output="screen"
+          respawn="$(arg respawn)" launch-prefix="$(arg launch_prefix)">
+      <param name="brightness" type="int" value="$(arg brightness)"/>
+      <param name="frame_rate" type="double" value="$(arg frame_rate)"/>
+      <param name="image_encoding" type="string" value="$(arg image_encoding)"/>
+      <param name="sensor_binning" type="bool" value="$(arg sensor_binning)"/>
+      <param name="binning_x" type="int" value="$(arg binning_x)"/>
+      <param name="binning_y" type="int" value="$(arg binning_y)"/>
+      <param name="device_user_id" type="string" value="One"/>
+    </node>
+
+    <!-- Camera 2 -->
+    <node name="$(arg node_name)_2" pkg="arena_camera" type="arena_camera_node" output="screen"
+          respawn="$(arg respawn)" launch-prefix="$(arg launch_prefix)">
+      <param name="brightness" type="int" value="$(arg brightness)"/>
+      <param name="frame_rate" type="double" value="$(arg frame_rate)"/>
+      <param name="image_encoding" type="string" value="$(arg image_encoding)"/>
+      <param name="sensor_binning" type="bool" value="$(arg sensor_binning)"/>
+      <param name="binning_x" type="int" value="$(arg binning_x)"/>
+      <param name="binning_y" type="int" value="$(arg binning_y)"/>
+      <param name="device_user_id" type="string" value="Two"/>
+    </node>
+</launch>
