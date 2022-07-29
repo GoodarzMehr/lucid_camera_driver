@@ -1,6 +1,9 @@
-# Lucid Vision Labs Camera Driver for CARMA
+Lucid Vision Labs Camera Driver for CARMA
+=========================================
+This is a fork of the [arena_camera_ros](https://github.com/lucidvisionlabs/arena_camera_ros) package that is used for connecting to, receiving data from, and configuring [Lucid Vision Labs](https://thinklucid.com/) cameras. This fork has been modified to allow for building a Docker image that can serve as a camera driver for the [CARMA Platform](https://github.com/usdot-fhwa-stol/carma-platform), along with new added functionalities.
 
-## Ubuntu 20.04 Installation
+Ubuntu 20.04 Installation
+-------------------------
 Assuming the CARMA Platform is installed at `~/carma_ws/src`,
 ```
 cd ~/carma_ws/src
@@ -9,9 +12,11 @@ cd lucid_camera_driver/docker
 sudo ./build-image.sh -d
 ```
 
-# Original Arena Camera Driver for ROS1 Documentation
+Original Arena Camera Driver for ROS1 Documentation
+===================================================
 
-## Getting Started
+Getting Started
+---------------
 setup and usage https://support.thinklucid.com/using-ros-for-linux/
 
 
