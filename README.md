@@ -70,7 +70,7 @@ N/A
 * `arena_camera_node/device_user_id`: the device user ID of the camera.
 * `arena_camera_node/frame_rate`: the frame rate of the camera. It is set to 10.0 Hz by default.
 * `arena_camera_node/camera_info_url`: the path to the [camera calibration file](http://www.ros.org/wiki/camera_calibration_parsers#File_formats).
-* `arena_camera_node/image_encoding`: the image encoding of the camera. It can be any of the following, if supported by the camera: `rgb8`, `rgb16`, `rgb24`, `bgr8`, `bgr16`, `bgr24`, bayer_rggb8`, `bayer_rggb16`, `bayer_rggb24`, `bayer_bggr8`, `bayer_bggr16`, `bayer_bggr24`, `bayer_grbg8`, `bayer_grbg16`, `bayer_grbg24`, `mono8`, `mono16`.
+* `arena_camera_node/image_encoding`: the image encoding of the camera. It can be any of the following, if supported by the camera: `rgb8`, `rgb16`, `rgb24`, `bgr8`, `bgr16`, `bgr24`, `bayer_rggb8`, `bayer_rggb16`, `bayer_rggb24`, `bayer_bggr8`, `bayer_bggr16`, `bayer_bggr24`, `bayer_grbg8`, `bayer_grbg16`, `bayer_grbg24`, `mono8`, `mono16`.
 * `arena_camera_node/binning_x`: the horizontal binning factor of the camera. It is set to 1 by default.
 * `arena_camera_node/binning_y`: the vertical binning factor of the camera. It is set to 1 by default.
 * `arena_camera_node/sensor_binning`: specifies whether sensor binning or digital binning is used. It is set to true by default.
@@ -84,6 +84,10 @@ N/A
 * `arena_camera_node/inter_pkg_delay`: the inter-package delay of the camera, given in ticks (only for cameras using the GigE Vision interface). It is set to 1000 by default.
 * `arena_camera_node/shutter_mode`: the shutter mode of the camera (global or rolling), if the camera supports different shutter modes.
 * `arena_camera_node/auto_flash`: specifies whether auto flash is turned on. It is set to false by default.
+
+Examples
+--------
+See the `lucid_single.launch` and `lucid_multi.launch` files in the `arena_camera/launch` directory that are used to launch one and multiple cameras, respectively.
 
 Original Arena Camera Driver for ROS1 Documentation
 ===================================================
