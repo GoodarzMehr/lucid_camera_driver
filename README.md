@@ -67,16 +67,16 @@ N/A
 
 #### Parameters
 * `arena_camera_node/camera_frame`: the [TF2](http://www.ros.org/wiki/tf2) frame ID of the camera. It is set to `arena_camera` by default.
-* `arena_camera_node/device_user_id`: the device user ID of the camera.
+* `arena_camera_node/device_user_id`: the device user ID of the camera. If empty, the first camera found in the device list will be used.
 * `arena_camera_node/frame_rate`: the frame rate of the camera. It is set to 10.0 Hz by default.
 * `arena_camera_node/camera_info_url`: the path to the [camera calibration file](http://www.ros.org/wiki/camera_calibration_parsers#File_formats).
-* `arena_camera_node/image_encoding`: the image encoding of the camera. It can be any of the following, if supported by the camera: `rgb8`, `rgb16`, `rgb24`, `bgr8`, `bgr16`, `bgr24`, `bayer_rggb8`, `bayer_rggb16`, `bayer_rggb24`, `bayer_bggr8`, `bayer_bggr16`, `bayer_bggr24`, `bayer_grbg8`, `bayer_grbg16`, `bayer_grbg24`, `mono8`, `mono16`.
+* `arena_camera_node/image_encoding`: the image pixel encoding of the camera, which defines the number and order of color channels and pixel bit-depth. It can be any of the following, if supported by the camera: `rgb8`, `rgb16`, `rgb24`, `bgr8`, `bgr16`, `bgr24`, `bayer_rggb8`, `bayer_rggb16`, `bayer_rggb24`, `bayer_bggr8`, `bayer_bggr16`, `bayer_bggr24`, `bayer_grbg8`, `bayer_grbg16`, `bayer_grbg24`, `mono8`, `mono16`.
 * `arena_camera_node/binning_x`: the horizontal binning factor of the camera. It is set to 1 by default.
 * `arena_camera_node/binning_y`: the vertical binning factor of the camera. It is set to 1 by default.
 * `arena_camera_node/sensor_binning`: specifies whether sensor binning or digital binning is used. It is set to true by default.
 * `arena_camera_node/exposure`: the exposure time of the camera. It is set to 0.1 seconds by default.
 * `arena_camera_node/gain`: the analog gain of the camera, given as a fraction of the maximum possible value. It is set to 0.5 by default.
-* `arena_camera_node/gamma`: the gamma correction value of the camera. It is set to 1.0 by default.
+* `arena_camera_node/gamma`: the gamma correction value of the camera. It adjusts the brightness of the pixel values output by the camera to account for the non-linearity in the human perception of brightness or that of the display system (e.g. a CRT display). It is set to 1.0 by default.
 * `arena_camera_node/brightness`: the target brightness of the camera. It is set to 70 by default.
 * `arena_camera_node/exposure_auto`: specifies whether auto exposure is turned on. It is set to true by default.
 * `arena_camera_node/gain_auto`: specifies whether auto gain is turned on. It is set to true by default.
