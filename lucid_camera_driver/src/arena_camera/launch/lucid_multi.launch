@@ -7,10 +7,10 @@
     
     <arg name="brightness" default="70" />
     <arg name="frame_rate" default="10.0" />
-    <arg name="image_encoding" default="bayer_rggb24" />
+    <arg name="image_encoding" default="bayer_rggb8" />
     <arg name="sensor_binning" default="true" />
-    <arg name="binning_x" default="2" />
-    <arg name="binning_y" default="2" />
+    <arg name="binning_x" default="1" />
+    <arg name="binning_y" default="1" />
 
     <arg unless="$(arg debug)" name="launch_prefix" value="" />
     <arg     if="$(arg debug)" name="launch_prefix" value="gdb -ex run --args" />
@@ -24,7 +24,7 @@
       <param name="sensor_binning" type="bool" value="$(arg sensor_binning)"/>
       <param name="binning_x" type="int" value="$(arg binning_x)"/>
       <param name="binning_y" type="int" value="$(arg binning_y)"/>
-      <param name="device_user_id" type="string" value="One"/>
+      <param name="device_user_id" type="string" value="Front"/>
     </node>
 
     <!-- Camera 2 -->
@@ -36,6 +36,66 @@
       <param name="sensor_binning" type="bool" value="$(arg sensor_binning)"/>
       <param name="binning_x" type="int" value="$(arg binning_x)"/>
       <param name="binning_y" type="int" value="$(arg binning_y)"/>
-      <param name="device_user_id" type="string" value="Two"/>
+      <param name="device_user_id" type="string" value="FrontLeft"/>
+    </node>
+
+    <!-- Camera 3 -->
+    <node name="$(arg node_name)_3" pkg="arena_camera" type="arena_camera_node" output="screen"
+          respawn="$(arg respawn)" launch-prefix="$(arg launch_prefix)">
+      <param name="brightness" type="int" value="$(arg brightness)"/>
+      <param name="frame_rate" type="double" value="$(arg frame_rate)"/>
+      <param name="image_encoding" type="string" value="$(arg image_encoding)"/>
+      <param name="sensor_binning" type="bool" value="$(arg sensor_binning)"/>
+      <param name="binning_x" type="int" value="$(arg binning_x)"/>
+      <param name="binning_y" type="int" value="$(arg binning_y)"/>
+      <param name="device_user_id" type="string" value="BackLeft"/>
+    </node>
+
+    <!-- Camera 4 -->
+    <node name="$(arg node_name)_4" pkg="arena_camera" type="arena_camera_node" output="screen"
+          respawn="$(arg respawn)" launch-prefix="$(arg launch_prefix)">
+      <param name="brightness" type="int" value="$(arg brightness)"/>
+      <param name="frame_rate" type="double" value="$(arg frame_rate)"/>
+      <param name="image_encoding" type="string" value="$(arg image_encoding)"/>
+      <param name="sensor_binning" type="bool" value="$(arg sensor_binning)"/>
+      <param name="binning_x" type="int" value="$(arg binning_x)"/>
+      <param name="binning_y" type="int" value="$(arg binning_y)"/>
+      <param name="device_user_id" type="string" value="BackRight"/>
+    </node>
+
+    <!-- Camera 5 -->
+    <node name="$(arg node_name)_5" pkg="arena_camera" type="arena_camera_node" output="screen"
+          respawn="$(arg respawn)" launch-prefix="$(arg launch_prefix)">
+      <param name="brightness" type="int" value="$(arg brightness)"/>
+      <param name="frame_rate" type="double" value="$(arg frame_rate)"/>
+      <param name="image_encoding" type="string" value="$(arg image_encoding)"/>
+      <param name="sensor_binning" type="bool" value="$(arg sensor_binning)"/>
+      <param name="binning_x" type="int" value="$(arg binning_x)"/>
+      <param name="binning_y" type="int" value="$(arg binning_y)"/>
+      <param name="device_user_id" type="string" value="FrontRight"/>
+    </node>
+
+    <!-- Camera 6 -->
+    <node name="$(arg node_name)_6" pkg="arena_camera" type="arena_camera_node" output="screen"
+          respawn="$(arg respawn)" launch-prefix="$(arg launch_prefix)">
+      <param name="brightness" type="int" value="$(arg brightness)"/>
+      <param name="frame_rate" type="double" value="$(arg frame_rate)"/>
+      <param name="image_encoding" type="string" value="$(arg image_encoding)"/>
+      <param name="sensor_binning" type="bool" value="$(arg sensor_binning)"/>
+      <param name="binning_x" type="int" value="$(arg binning_x)"/>
+      <param name="binning_y" type="int" value="$(arg binning_y)"/>
+      <param name="device_user_id" type="string" value="SideLeft"/>
+    </node>
+
+    <!-- Camera 7 -->
+    <node name="$(arg node_name)_7" pkg="arena_camera" type="arena_camera_node" output="screen"
+          respawn="$(arg respawn)" launch-prefix="$(arg launch_prefix)">
+      <param name="brightness" type="int" value="$(arg brightness)"/>
+      <param name="frame_rate" type="double" value="$(arg frame_rate)"/>
+      <param name="image_encoding" type="string" value="$(arg image_encoding)"/>
+      <param name="sensor_binning" type="bool" value="$(arg sensor_binning)"/>
+      <param name="binning_x" type="int" value="$(arg binning_x)"/>
+      <param name="binning_y" type="int" value="$(arg binning_y)"/>
+      <param name="device_user_id" type="string" value="SideRight"/>
     </node>
 </launch>

@@ -539,6 +539,10 @@ namespace arena_camera
       auto currentFrameRate = Arena::GetNodeValue<double>(pNodeMap , "AcquisitionFrameRate");
       auto maximumFrameRate = GenApi::CFloatPtr(pNodeMap->GetNode("AcquisitionFrameRate"))->GetMax();
 
+      // Set the desired auto exposure damping.
+      GenApi::CFloatPtr pExposureAutoDamping = pNodeMap->GetNode("ExposureAutoDamping");
+      pExposureAutoDamping->SetValue(49.9);
+
       // If the desired frame rate is larger than the maximum possible frame
       // rate, set frame rate to the maximum value.
       if (cmdlnParamFrameRate >= trunc(1000 * maximumFrameRate) / 1000.0)
